@@ -599,7 +599,10 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
      ================================================================ -->
 
 <!-- Preface -->
-<p data-prose="preface">The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them.</p>
+<p data-prose="preface">The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them. The shop deals in manuscripts and printed literature, and in the year 1936 its trade has taken its staff into stranger company than a bookseller has any right to expect. Charlie Copperpot, Frankie Devereaux and Jack “Guzzy” Forster keep the record, and it is set down here in the order that they came by it.</p>
+<p data-prose="preface-2">In Chapter One, Gallery of the One-Eyed God, a telegram from Mr. Westoby called the Bookhounds to the Pimander Club in Piccadilly, where Johnstone Dives engaged them to find a copy of the Caedis Urbi Verae Claves. The search led them from a flat in Kensington to a public house in Spitalfields, and it ended with an auction and a fire. Chapter Two, The Shadow on the Throne, is in preparation. It opens at Westminster, in a year when the whole country is talking about the King.</p>
+<p data-prose="preface-3">A word on the use of this book. It is meant to be kept open on the table during play. Sign the borrower’s register with the name of your Bookhound, and the book will know whose it is. Each player may alter only the sheet of their own Bookhound, by pressing “Edit this sheet” at the foot of it. Everyone else may read it. When you have done with the book, press “Return the book” at the top of the page, and the next reader may sign it out.</p>
+<p data-prose="preface-4">Any page may be folded by pressing its running head, and a folded page lies as a narrow strip, which keeps the book short. The Contents lists every page and will take you to it. Plate I is a map of London that may be dragged and enlarged, with the places visited pinned upon it; hold a pointer over a pin, or touch it, to read of the place. Pressing an ability on a sheet opens a telegram form for a roll, and every throw is entered in the Telegraph Office, Appendix C, where the whole table can see it. Appendix A keeps the clues found so far. The Keeper may lay out the two plans as gaming mats, with counters to move about upon them.</p>
 
 <!-- The Premises: three paragraphs between the photographs -->
 <p data-prose="premises-1">The shop stands on a busy corner of New Bond Street. It is well kept. Books fill every wall up to the high ceilings, wheeled ladders run along the left and right walls, and a gallery at the back looks down over the front of the shop. A coat room opens off the entrance. From it a crawlspace runs through to the shop next door, and it feels longer than it should.</p>
@@ -668,11 +671,9 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
     <p class="nv-chapnum">Preface</p>
     <h2 class="nv-h2">To the Reader</h2>
     <p class="nv-drop" data-draw="prose-preface"></p>
-    <dl class="nv-abstract">
-      <div><dt>Parts recorded</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-parts" data-source="totals" data-field="parts" data-row="0">—</dd></div>
-      <div><dt>Persons of interest</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-persons" data-source="totals" data-field="persons" data-row="0">—</dd></div>
-      <div><dt>Tomes encountered</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-tomes" data-source="totals" data-field="tomes" data-row="0">—</dd></div>
-    </dl>
+    <p data-draw="prose-preface-2"></p>
+    <p data-draw="prose-preface-3"></p>
+    <p data-draw="prose-preface-4"></p>
   </div>
   <footer class="nv-folio"></footer>
  </article>
@@ -895,17 +896,6 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 <script src="firebase-config.js"></script>
 <script src="runtime.js"></script>
 <script>
-dash.calc('totals', {
-  inputs: ['episodes', 'persons', 'tomes'],
-  title: 'Season totals',
-  description: 'Parts played (numbered episodes), persons of interest, and tomes encountered.',
-  fn: (episodes, persons, tomes) => [{
-    parts: episodes.filter((e) => e.status === 'Played' && /^\d+$/.test(String(e.part))).length,
-    persons: persons.length,
-    tomes: tomes.length
-  }]
-});
-
 const nvSettle = (el, d) => el.classList.toggle('dash-skeleton', d.status === 'loading');
 const nvFail = (el) => { el.replaceChildren(); const f = document.createElement('div'); f.className = 'nv-fail'; f.textContent = 'Failed to load'; el.append(f); };
 const nvRoman = (n) => [[10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']].reduce((a, [v, r]) => { while (n >= v) { a += r; n -= v; } return a; }, '');
@@ -947,7 +937,7 @@ const nvProseEl = (el, key, fallback) => {
   el.textContent = nvBlank(v) ? String(fallback ?? '') : v;
   return el;
 };
-['preface', 'premises-1', 'premises-2', 'premises-3'].forEach((k) => dash.draw('prose-' + k, (el) => nvProseEl(el, k, '')));
+['preface', 'preface-2', 'preface-3', 'preface-4', 'premises-1', 'premises-2', 'premises-3'].forEach((k) => dash.draw('prose-' + k, (el) => nvProseEl(el, k, '')));
 const nvPartName = (p) => /^\d+$/.test(String(p)) ? 'Part ' + nvRoman(Number(p)) : String(p);
 const nvOrdinal = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
 const nvSeasonName = (ch) => ({ 1: 'Gallery of the One-Eyed God', 2: 'The Shadow on the Throne' })[ch] || '';
@@ -1016,12 +1006,6 @@ const nvMarkSeason = () => document.querySelectorAll('.nv-season').forEach((b) =
 document.querySelectorAll('.nv-season').forEach((b) => b.addEventListener('click', () => { dash.setParams({ season: b.dataset.season }); nvMarkSeason(); }));
 nvMarkSeason();
 const nvInSeason = (p) => p.kind === 'base' || nvSeason() === 'all' || p.season === nvSeason();
-
-[['t-parts', 'parts'], ['t-persons', 'persons'], ['t-tomes', 'tomes']]
-  .forEach(([name, field]) => dash.draw(name, (el) => {
-    const d = dash.data('totals'); nvSettle(el, d);
-    el.textContent = d.status === 'ok' && d.data.length ? d3.format(',')(d.data[0][field]) : '—';
-  }));
 
 dash.draw('stock-b', (el) => {
   const d = dash.data('shop'); nvSettle(el, d);
