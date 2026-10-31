@@ -1,0 +1,65 @@
+[
+ {
+  "id": "I-1",
+  "chapter": 1,
+  "part": "1",
+  "status": "Played",
+  "title": "The Commission",
+  "summary": "A telegram from Westoby brings the Bookhounds to the Pimander Club. There Johnstone Dives hires them to find the de Castries copy of the Caedis Urbi Verae Claves, a book said to curse any house that keeps it. Ronaldo follows a one-eyed vagrant to a stone door in John’s Walk and chalks a frog’s-eye sign on it. Meanwhile the astronomer Paul Fletcher is on his way from Cape Town to meet the art dealer Aston Drummel.",
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": "I-2",
+  "chapter": 1,
+  "part": "2",
+  "status": "Played",
+  "title": "Drummel’s Flat",
+  "summary": "Bob and Ronaldo break into Drummel’s flat in Kensington. They take a Ten Bells coaster, a note from Fletcher with a symbol Bob remembers from the Boer War, and some canvases by an unknown painter called Francis Bacon. Magwich warns them to stay away from Drummel. White eyes start appearing on walls in Whitechapel. At the Ten Bells, Bacon tells everyone to bid at his auction.",
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": "I-3",
+  "chapter": 1,
+  "part": "3",
+  "status": "Played",
+  "title": "The Canvas",
+  "summary": "In Bacon’s lodgings something climbs out of a painting and asks, “Who sent you?” It only backs off when they give Dives’s name. Drummel and Magwich turn up at the shop and are seen off with a shotgun. Bastion Melwig brings On the Glory of Nodens, which tells of an old British god, Nodens, at war with Byatis, a one-eyed frog-god under London.",
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": "I-4",
+  "chapter": 1,
+  "part": "4",
+  "status": "Played",
+  "title": "The House of Westoby",
+  "summary": "Bob follows the address on an old silver key to a house with his own family’s portrait on the wall, a map of Whitechapel pinned in the shape of an eye, and letters from Dives. He realises he is Westoby. Charlie finds a letter by D’Onstan claiming the Ripper murders were a ritual. Left alone with the canvas, Bob agrees to help destroy the followers of Nodens and disappears into it.",
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": "I-i",
+  "chapter": 1,
+  "part": "Interlude",
+  "status": "Played",
+  "title": "The Tribute",
+  "summary": "Ronaldo gives one of his eyes to the emissary of Byatis. In return he can pass through Byatis’s doors.",
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": "I-5",
+  "chapter": 1,
+  "part": "5",
+  "status": "Played",
+  "title": "The Auction",
+  "summary": "The Bookhounds burn the canvas, and Ronaldo disappears. Crowley tells them the Caedis Urbi Verae Claves can open or close the Eye of Byatis. At the auction in the Ten Bells, Ronaldo bursts in with the vagrants, Guzzy shoots Fletcher and then Ronaldo, and Frankie throws the book on the fire.",
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": "II",
+  "chapter": 2,
+  "part": "",
+  "status": "Forthcoming",
+  "title": "In preparation",
+  "summary": "Westminster, December 1936.",
+  "season": "The Shadow on the Throne"
+ }
+]

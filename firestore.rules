@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // For now anyone with the link can read and write everything.
+    // Tighten this later (see README).
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,0 +1,122 @@
+[
+ {
+  "id": 0,
+  "kind": "base",
+  "name": "P. L. Westoby’s Manuscripts & Printed Literature",
+  "when": "Headquarters",
+  "note": "The Bookhounds’ shop, at 106 New Bond Street.",
+  "x_pct": 53.76,
+  "y_pct": 41.33,
+  "season": null
+ },
+ {
+  "id": 1,
+  "kind": "visit",
+  "name": "The Pimander Club, Piccadilly",
+  "when": "Part I",
+  "note": "Dives hired the Bookhounds here.",
+  "x_pct": 50.83,
+  "y_pct": 48.22,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 2,
+  "kind": "visit",
+  "name": "John’s Walk",
+  "when": "Part I",
+  "note": "An alley that ends at a stone door.",
+  "x_pct": null,
+  "y_pct": null,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 3,
+  "kind": "visit",
+  "name": "The Broadgate Hotel",
+  "when": "Part I",
+  "note": "Fletcher was to meet Drummel here.",
+  "x_pct": null,
+  "y_pct": null,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 4,
+  "kind": "visit",
+  "name": "Drummel’s flat, Kensington",
+  "when": "Part II",
+  "note": "Bob and Ronaldo burgled it.",
+  "x_pct": 30.42,
+  "y_pct": 58.58,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 5,
+  "kind": "visit",
+  "name": "The Salt N’ Swine",
+  "when": "Part II",
+  "note": "Bob first met Magwich here.",
+  "x_pct": null,
+  "y_pct": null,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 6,
+  "kind": "visit",
+  "name": "The Ten Bells",
+  "when": "Parts II, IV & V",
+  "note": "Drummel confronted Bacon here, Bacon held his auction here, and the Caedis Urbi Verae Claves was burned in its fireplace.",
+  "x_pct": 83.08,
+  "y_pct": 31.24,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 7,
+  "kind": "visit",
+  "name": "Whitechapel",
+  "when": "Parts II & IV",
+  "note": "White eyes appeared on the walls, one-eyed tramps walked the streets, and Westoby’s map was pinned here.",
+  "x_pct": 94.6,
+  "y_pct": 31.8,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 8,
+  "kind": "visit",
+  "name": "Bacon’s lodgings, Southwark",
+  "when": "Part III",
+  "note": "The Bookhounds found a dead painter and the canvas here.",
+  "x_pct": 73.59,
+  "y_pct": 63.72,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 9,
+  "kind": "visit",
+  "name": "Westoby’s rowhouse",
+  "when": "Part IV",
+  "note": "Bob found the portrait, the laboratory and the sealed room here.",
+  "x_pct": null,
+  "y_pct": null,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 10,
+  "kind": "visit",
+  "name": "The Red Lion",
+  "when": "Part IV",
+  "note": "A pub a few streets from the shop, where Charlie made his truce with Drummel.",
+  "x_pct": null,
+  "y_pct": null,
+  "season": "Gallery of the One-Eyed God"
+ },
+ {
+  "id": 11,
+  "kind": "visit",
+  "name": "Westminster",
+  "when": "Chapter Two",
+  "note": "The Shadow on the Throne begins here.",
+  "x_pct": 63.28,
+  "y_pct": 54.82,
+  "season": "The Shadow on the Throne"
+ }
+]

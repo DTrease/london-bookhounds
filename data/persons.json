@@ -1,0 +1,182 @@
+[
+ {
+  "name": "Ronaldo Phantassi",
+  "role": "Painter and occultist, fond of opium; once one of the Bookhounds",
+  "note": "Gave one of his eyes to the emissary of Byatis, and now sees colours that shouldn’t exist. When the canvas burned he vanished, only to burst into the auction with the vagrants. Guzzy shot him.",
+  "standing": "Touched by Byatis",
+  "portrait": "assets/d3942d25cad1cde4875333b63e1ef453.jpg",
+  "chapter": 1,
+  "portrait_caption": null,
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Bob Carr",
+  "role": "Veteran of the Boer War; once one of the Bookhounds",
+  "note": "Found out that he is P. L. Westoby, and went into the painting to help destroy the followers of Nodens.",
+  "standing": "Vanished",
+  "portrait": "assets/fc6ea6f7e60fbf158f962ccabf958363.jpg",
+  "chapter": 1,
+  "portrait_caption": null,
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Johnstone Dives",
+  "role": "Aristocrat and owner of emerald mines in South Africa",
+  "note": "Hired the Bookhounds to find the Caedis Urbi Verae Claves. A follower of Byatis, he worked with Westoby against the followers of Nodens.",
+  "standing": "Patron",
+  "portrait": "assets/6095fd5acd167078993f402d1e7224f2.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Paul Fletcher",
+  "role": "Wealthy astronomer and follower of Nodens",
+  "note": "Came from Cape Town to buy the Caedis Urbi Verae Claves, won the auction, and was shot for it.",
+  "standing": "Rival",
+  "portrait": "assets/38e283daacec3cd66c4192e408f14263.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Aston Drummel",
+  "role": "Art dealer, of Kensington",
+  "note": "Bacon’s agent for years. After threatening the shop, he made a truce with Charlie.",
+  "standing": "Truce",
+  "portrait": "assets/3b1d7a32af835e842d706a416295a9c8.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Magwich",
+  "role": "Hired muscle, with a sooty bag",
+  "note": "Went after the Bookhounds twice. Frankie shot him outside Westoby’s.",
+  "standing": "Hostile",
+  "portrait": "assets/a361a3fd8c4a29690200086b5b3d92f3.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Francis Bacon",
+  "role": "A young painter, not yet known",
+  "note": "Stole the Caedis Urbi Verae Claves in France and auctioned it at the Ten Bells.",
+  "standing": "Unknown",
+  "portrait": "assets/bc32a3789a1ba7f440e76ccf25e40144.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "square"
+ },
+ {
+  "name": "Aleister Crowley",
+  "role": "Occultist, for a fee",
+  "note": "The Bookhounds paid him a hundred pounds to explain the Caedis Urbi Verae Claves. He laughed when it burned.",
+  "standing": "Mercenary",
+  "portrait": "assets/e4eeda166fcaae7e6c5ba697dc1d8fbf.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "square"
+ },
+ {
+  "name": "Bastion Melwig",
+  "role": "Scholar and friend of Guzzy’s",
+  "note": "Brought On the Glory of Nodens to the shop, and was struck down by the painting.",
+  "standing": "Wounded",
+  "portrait": "assets/6fb021fd00da4cf9c99211d5ecc0622b.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Terry Flate",
+  "role": "Irish barman at the Ten Bells",
+  "note": "Knows Francis Bacon, and most of what goes on in the pub.",
+  "standing": "Neutral",
+  "portrait": "assets/53aa7adb8871537def3cf1700994f9b8.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "The Emissary",
+  "role": "",
+  "note": "Servant of Byatis.",
+  "standing": "",
+  "portrait": "assets/cf9cc37983ac70a478b7025443f9dfa7.jpg",
+  "chapter": 1,
+  "portrait_caption": "Plate withdrawn",
+  "portrait_shape": "withdrawn"
+ },
+ {
+  "name": "Robert D’Onstan",
+  "role": "Suspect in the Whitechapel murders",
+  "note": "Called the hero of Nodens. In 1886 he wrote that the murders were a necromantic ritual; he died soon after.",
+  "standing": "Deceased",
+  "portrait": "assets/7e7f52f1704533517380b56c0c32959e.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Julian de Castries",
+  "role": "Looter of the Caedis Urbi Verae Claves",
+  "note": "Last showed the book off in Rome, in 1860.",
+  "standing": "Deceased",
+  "portrait": "assets/c725732e20ab2122d725b968a7d8e2d9.jpg",
+  "chapter": 1,
+  "portrait_caption": "From a portrait in oils",
+  "portrait_shape": "portrait"
+ },
+ {
+  "name": "Edward VIII",
+  "role": "King of the United Kingdom and the Dominions, and Emperor of India",
+  "note": "King since his father’s death in January 1936. He wants to marry Mrs. Wallis Simpson, an American who is divorcing her second husband, and the government and the Church are against it.",
+  "standing": "The King",
+  "portrait": "assets/64287cdeb9c9ac7a51ac58650929df55.webp",
+  "portrait_caption": "From a newsreel",
+  "chapter": 2,
+  "portrait_shape": "square"
+ },
+ {
+  "name": "Mrs. Wallis Simpson",
+  "role": "American, from Baltimore; divorced once and now divorcing again",
+  "note": "The King’s constant companion. The American papers are full of her, while the British papers have kept quiet. The question is whether she could ever be Queen.",
+  "standing": "The King’s companion",
+  "portrait": "assets/5593e64a0e6aaa2ba7d7e066a63b3c89.webp",
+  "portrait_caption": "From a newsreel",
+  "portrait_shape": "square",
+  "chapter": 2
+ },
+ {
+  "name": "Stanley Baldwin",
+  "role": "Prime Minister for the third time, since June 1935, and leader of the Conservatives",
+  "note": "Cautious, and never without his pipe. He believes the King cannot marry Mrs. Simpson and stay on the throne, and the Dominions and the Church agree.",
+  "standing": "The Prime Minister",
+  "portrait": "assets/2f9da7cb69c3d4da9c229381a397a4c3.webp",
+  "portrait_caption": "From a newsreel",
+  "portrait_shape": "square",
+  "chapter": 2
+ },
+ {
+  "name": "Winston Churchill",
+  "role": "MP for Epping, out of office since 1929",
+  "note": "Has been warning about Germany for years. In the Commons he is the King’s strongest supporter, pressing Baldwin to give the King more time.",
+  "standing": "The King’s friend",
+  "portrait": "assets/55c1fe113cb25b24f7ce863603f67bb0.webp",
+  "portrait_caption": "From a newsreel",
+  "portrait_shape": "square",
+  "chapter": 2
+ },
+ {
+  "name": "Joachim von Ribbentrop",
+  "role": "German Ambassador in London, from October 1936",
+  "note": "Hitler’s man in London.",
+  "standing": "The Ambassador",
+  "portrait": "assets/dfe6e466f62a6458c63ee9458b018e21.webp",
+  "portrait_caption": "From a newsreel",
+  "portrait_shape": "square",
+  "chapter": 2
+ }
+]
