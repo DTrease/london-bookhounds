@@ -551,6 +551,10 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-reg-overlay.is-checking .nv-reg-sign, .nv-reg-overlay.is-checking .nv-reg-foot { visibility: hidden; }
 .nv-whoami { font-style: italic; color: #e9dcc0; margin-right: auto; }
 
+.nv-editable { outline: 1px dashed rgba(122,36,24,.55); outline-offset: 3px; cursor: text; background: rgba(255,250,235,.35); }
+.nv-editable:focus { outline: 1px solid var(--rubric); background: rgba(255,250,235,.7); }
+.nv-tool.nv-prose-edit[hidden], .nv-keeper-dot[hidden] { display: none; }
+.nv.is-prose-editing .nv-prose-edit { color: #f0d9a8; }
 /* persons */
 
 
@@ -619,7 +623,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 </style>
 
 <div class="nv is-locked">
- <nav class="nv-toolbar" aria-label="Pages"><span class="nv-whoami" data-draw="whoami"></span><button type="button" class="nv-tool nv-return">Return the book</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="all">Close every page</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="none">Open every page</button></nav>
+ <nav class="nv-toolbar" aria-label="Pages"><span class="nv-whoami" data-draw="whoami"></span><button type="button" class="nv-tool nv-prose-edit" hidden><span data-draw="prose-edit-label">Edit the text</span></button><span class="nv-keeper-dot" aria-hidden="true" hidden>·</span><button type="button" class="nv-tool nv-return">Return the book</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="all">Close every page</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="none">Open every page</button></nav>
  <div class="nv-book">
 
  <article class="nv-page" id="title" data-page="title">
@@ -640,7 +644,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
   <div class="nv-body">
     <p class="nv-chapnum">Preface</p>
     <h2 class="nv-h2">To the Reader</h2>
-    <p class="nv-drop">The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them.</p>
+    <p class="nv-drop" data-draw="prose-preface"></p>
     <dl class="nv-abstract">
       <div><dt>Parts recorded</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-parts" data-source="totals" data-field="parts" data-row="0">—</dd></div>
       <div><dt>Persons of interest</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-persons" data-source="totals" data-field="persons" data-row="0">—</dd></div>
@@ -659,9 +663,9 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
       <img src="assets/73e99192d6a8aa5dc1a4fc853b30be11.jpg" alt="The shopfront of P. L. Westoby’s, with a customer browsing the book table outside" loading="lazy">
       <figcaption><b>The Premises of P. L. Westoby, New Bond Street</b><i>From a photograph</i></figcaption>
     </figure>
-    <p class="nv-premises-note">The shop stands on a corner of New Bond Street, which is busy all day with every sort of person. It is well kept. Books fill every wall up to the high ceilings, wheeled ladders run along the left and right walls, and a gallery at the back looks down over the front of the shop. A coat room opens off the entrance. From it a crawlspace runs through to the shop next door, and it feels longer than it should.</p>
-    <p>The shop has electric light, which the owner arranged by paying the right officials. The parlour does not. It is still lit by paraffin lamps, because the owner didn’t want electricians lifting the rugs. Under them are five spots of candle wax on the floorboards, joined by thin carved lines in the shape of a pentagram. The parlour is used for book clubs and readings; the rest of the time, only close friends of the shop are let in.</p>
-    <p>Stairs in the parlour go down to the cellar store room, which has a needlessly complicated wall safe, made by a firm nobody can remember without reading the name off the door. On the roof, the owner’s assistant keeps a shed where she looks after a small flock of pigeons and a small observatory.</p>
+    <p class="nv-premises-note" data-draw="prose-premises-1"></p>
+    <p data-draw="prose-premises-2"></p>
+    <p data-draw="prose-premises-3"></p>
     <figure class="nv-fullplate">
       <img src="assets/93695affb02838c05e1ba83bc642189e.jpg" alt="Inside P. L. Westoby’s: shelves to the ceiling, a man on a ladder at the gallery, long tables of folios" loading="lazy">
       <figcaption><b>The Interior of P. L. Westoby’s: The Gallery, from the Staircase</b><i>From a photograph</i></figcaption>
@@ -902,6 +906,52 @@ const nvLive = (makeQuery, onData, onGiveUp) => {
 };
 // draw a section without letting one bad record blank the whole thing
 const nvSafe = (el, fn, what) => { try { fn(); } catch (e) { console.error('[book] could not draw ' + what, e); el.append(nvEl('p', 'nv-none', `Part of this section could not be drawn (${what}).`)); } };
+// who is reading, readable from anywhere (set when the register is signed)
+const nvRole = { keeper: false, label: '' };
+const NV_PROSE_DEFAULTS = {"preface": "The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them.", "premises-1": "The shop stands on a corner of New Bond Street, which is busy all day with every sort of person. It is well kept. Books fill every wall up to the high ceilings, wheeled ladders run along the left and right walls, and a gallery at the back looks down over the front of the shop. A coat room opens off the entrance. From it a crawlspace runs through to the shop next door, and it feels longer than it should.", "premises-2": "The shop has electric light, which the owner arranged by paying the right officials. The parlour does not. It is still lit by paraffin lamps, because the owner didn’t want electricians lifting the rugs. Under them are five spots of candle wax on the floorboards, joined by thin carved lines in the shape of a pentagram. The parlour is used for book clubs and readings; the rest of the time, only close friends of the shop are let in.", "premises-3": "Stairs in the parlour go down to the cellar store room, which has a needlessly complicated wall safe, made by a firm nobody can remember without reading the name off the door. On the roof, the owner’s assistant keeps a shed where she looks after a small flock of pigeons and a small observatory."};
+const nvProse = { map: {}, col: null, edit: false, pending: false };
+const NV_PROSE_DRAWINGS = ['prose-preface', 'prose-premises-1', 'prose-premises-2', 'prose-premises-3', 'toc', 'persons', 'tomes'];
+const nvProseRedraw = () => {
+  const a = document.activeElement;
+  if (a && a.classList && a.classList.contains('nv-editable')) { nvProse.pending = true; return; }   // never redraw under someone's cursor
+  NV_PROSE_DRAWINGS.forEach((n) => dash.draw(n));
+};
+// fill an element with a block of prose; when the Keeper is editing, make it writable and save on leaving it
+const nvProseEl = (el, key, fallback) => {
+  const saved = nvProse.map[key];
+  const text = nvBlank(saved) ? String(fallback ?? '') : String(saved);
+  el.textContent = text;
+  el._nvProse = { key, fallback: String(fallback ?? ''), text };
+  const on = !!(nvProse.edit && nvRole.keeper && nvProse.col);
+  if (!on) { el.removeAttribute('contenteditable'); el.classList.remove('nv-editable'); return el; }
+  el.contentEditable = 'plaintext-only';
+  if (el.contentEditable !== 'plaintext-only') el.contentEditable = 'true';
+  el.spellcheck = true;
+  el.classList.add('nv-editable');
+  if (el._nvProseWired) return el;          // the same element can be redrawn; wire it once
+  el._nvProseWired = true;
+  el.addEventListener('paste', (ev) => {
+    if (!el.classList.contains('nv-editable')) return;
+    ev.preventDefault();
+    const s = (ev.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, s);
+  });
+  el.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && el.classList.contains('nv-editable')) { el.textContent = el._nvProse.text; el.blur(); } });
+  el.addEventListener('blur', () => {
+    const st = el._nvProse;
+    if (!st || !el.classList.contains('nv-editable') || !nvProse.col) return;
+    const v = String(el.innerText || '').replace(/[ \t]+\n/g, '\n').trim().slice(0, 4000);
+    if (v !== st.text) {
+      const ref = nvProse.col.doc(st.key.replace(/[^A-Za-z0-9_.~:@+-]/g, '_'));
+      ((v === '' || v === st.fallback.trim()) ? ref.delete() : ref.set({ key: st.key, text: v, at: new Date().toISOString(), by: nvRole.label })).catch(() => {});
+      nvProse.map[st.key] = v;
+      st.text = v || st.fallback;
+      if (v === '') el.textContent = st.fallback;
+    }
+    if (nvProse.pending) { nvProse.pending = false; setTimeout(nvProseRedraw, 0); }
+  });
+  return el;
+};
 const nvPartName = (p) => /^\d+$/.test(String(p)) ? 'Part ' + nvRoman(Number(p)) : String(p);
 const nvOrdinal = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
 const nvSeasonName = (ch) => ({ 1: 'Gallery of the One-Eyed God', 2: 'The Shadow on the Throne' })[ch] || '';
@@ -973,7 +1023,7 @@ dash.draw('toc', (el) => {
       const li = nvEl('li', r.status === 'Played' ? '' : 'is-forth');
       const txt = nvEl('div');
       txt.append(nvEl('span', 't', r.title));
-      if (r.status === 'Played' && r.summary) txt.append(nvEl('p', 's', r.summary));
+      if (r.status === 'Played' && r.summary) txt.append(nvProseEl(nvEl('p', 's'), 'episode:' + r.id, r.summary));
       li.append(nvEl('span', 'n', r.part ? nvPartName(r.part) : ''), txt);
       el.append(li);
     });
@@ -1479,6 +1529,10 @@ const nvApplyReader = () => {
   document.querySelectorAll('.nv-reg-overlay').forEach((o) => { o.classList.toggle('is-open', !nvMe); o.classList.remove('is-checking'); });
   document.querySelectorAll('.nv').forEach((n) => n.classList.toggle('is-locked', !nvMe));
   dash.draw('whoami');
+  document.querySelectorAll('.nv-prose-edit, .nv-keeper-dot').forEach((b) => { b.hidden = !nvIsKeeper(); });
+  if (!nvIsKeeper() && nvProse.edit) { nvProse.edit = false; document.querySelectorAll('.nv').forEach((n) => n.classList.remove('is-prose-editing')); dash.draw('prose-edit-label'); }
+  NV_PROSE_DRAWINGS.forEach((n) => dash.draw(n));
+  nvRole.keeper = nvIsKeeper(); nvRole.label = nvMe ? nvMe.label : '';
   nvMatGM = nvIsKeeper(); nvClues.gm = nvIsKeeper();
   Object.values(nvMats).forEach((M) => M.sync && M.sync());
   dash.draw('sheets'); dash.draw('cluelist');
@@ -1536,6 +1590,28 @@ document.querySelectorAll('.nv-return').forEach((b) => b.addEventListener('click
   }
   clearTimeout(fallback);
   if (!nvMe) nvApplyReader();
+})();
+
+
+// ---------- prose the Keeper can rewrite in place ----------
+Object.keys(NV_PROSE_DEFAULTS).forEach((k) => dash.draw('prose-' + k, (el) => nvProseEl(el, k, NV_PROSE_DEFAULTS[k])));
+document.querySelectorAll('.nv-prose-edit').forEach((b) => b.addEventListener('click', () => {
+  nvProse.edit = !nvProse.edit;
+  document.querySelectorAll('.nv').forEach((n) => n.classList.toggle('is-prose-editing', nvProse.edit));
+  dash.draw('prose-edit-label');
+  NV_PROSE_DRAWINGS.forEach((n) => dash.draw(n));
+}));
+dash.draw('prose-edit-label', (el) => { el.textContent = nvProse.edit ? 'Finish editing' : 'Edit the text'; });
+(async () => {
+  const db = await nvDB;
+  if (!db) return;
+  nvProse.col = db.collection('prose');
+  nvLive(() => nvProse.col, (snap) => {
+    const m = {};
+    snap.docs.forEach((d) => { const x = d.data(); if (x && x.key) m[x.key] = x.text; });
+    nvProse.map = m;
+    nvProseRedraw();
+  });
 })();
 
 // ---------- character sheets: kept in the shared record so players can edit them ----------
@@ -1818,7 +1894,7 @@ dash.draw('persons', (el) => {
     const dd = nvEl('dd');
     if (pic) { dd.append(nvInset(p.portrait, p.name, 'left', true, p.portrait_caption, p.portrait_shape, p.hover_sprite ? { sprite: p.hover_sprite, frames: Number(p.hover_frames) || 1 } : null)); }
     if (!nvBlank(p.role)) dd.append(nvEl('em', '', p.role));
-    if (p.portrait_shape === 'withdrawn') dd.append(nvEl('span', 'nv-whisper', p.note)); else dd.append(document.createTextNode(p.note));
+    dd.append(nvProseEl(nvEl('span', p.portrait_shape === 'withdrawn' ? 'nv-whisper' : 'nv-note'), 'person:' + p.name, p.note));
     row.append(dt, dd);
     el.append(row);
   });
@@ -1888,7 +1964,7 @@ dash.draw('tomes', (el) => {
   if (d.status !== 'ok') return;
   d.data.forEach((t) => {
     const b = nvEl('div', 'nv-tome');
-    b.append(nvEl('span', 'tt', t.title)); if (!nvBlank(t.gloss)) b.append(nvEl('span', 'gl', t.gloss)); b.append(nvEl('span', 'nt', t.note), nvEl('span', 'ft', t.fate));
+    b.append(nvEl('span', 'tt', t.title)); if (!nvBlank(t.gloss)) b.append(nvEl('span', 'gl', t.gloss)); b.append(nvProseEl(nvEl('span', 'nt'), 'tome:' + t.title, t.note), nvEl('span', 'ft', t.fate));
     el.append(b);
   });
 });
