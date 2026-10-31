@@ -25,8 +25,8 @@
   "name": "John’s Walk",
   "when": "Part I",
   "note": "An alley that ends at a stone door.",
-  "x_pct": null,
-  "y_pct": null,
+  "x_pct": 69.4,
+  "y_pct": 33.03,
   "season": "Gallery of the One-Eyed God"
  },
  {
@@ -35,8 +35,8 @@
   "name": "The Broadgate Hotel",
   "when": "Part I",
   "note": "Fletcher was to meet Drummel here.",
-  "x_pct": null,
-  "y_pct": null,
+  "x_pct": 85.1,
+  "y_pct": 33.79,
   "season": "Gallery of the One-Eyed God"
  },
  {
@@ -55,8 +55,8 @@
   "name": "The Salt N’ Swine",
   "when": "Part II",
   "note": "Bob first met Magwich here.",
-  "x_pct": null,
-  "y_pct": null,
+  "x_pct": 49.5,
+  "y_pct": 48.44,
   "season": "Gallery of the One-Eyed God"
  },
  {
@@ -95,8 +95,8 @@
   "name": "Westoby’s rowhouse",
   "when": "Part IV",
   "note": "Bob found the portrait, the laboratory and the sealed room here.",
-  "x_pct": null,
-  "y_pct": null,
+  "x_pct": 32.75,
+  "y_pct": 65.3,
   "season": "Gallery of the One-Eyed God"
  },
  {
@@ -105,8 +105,8 @@
   "name": "The Red Lion",
   "when": "Part IV",
   "note": "A pub a few streets from the shop, where Charlie made his truce with Drummel.",
-  "x_pct": null,
-  "y_pct": null,
+  "x_pct": 51.1,
+  "y_pct": 37.96,
   "season": "Gallery of the One-Eyed God"
  },
  {
