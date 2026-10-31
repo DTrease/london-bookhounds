@@ -520,7 +520,8 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-cs-add { margin-top: .4rem; font-size: .8rem; }
 
 /* the borrower's register: same paper, ink and type as the book */
-.nv-reg-overlay { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(29,23,18,.88); overflow: auto; }
+.nv-reg-overlay { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 1rem; background: #1d1712 radial-gradient(ellipse at 50% 0%, #3a2f24 0%, #1d1712 80%); overflow: auto; }
+.nv.is-locked .nv-book, .nv.is-locked .nv-toolbar, .nv.is-locked .nv-tg-overlay { visibility: hidden; }
 .nv-reg-overlay.is-open, .nv-reg-overlay.is-checking { display: flex; }
 .nv-reg { width: min(32rem, 100%); color: var(--ink); font-family: var(--face); padding: 1.3rem 1.4rem 1.1rem; transform: rotate(-.4deg);
   background: radial-gradient(ellipse at 50% 45%, var(--paper) 55%, var(--paper-2) 100%); box-shadow: 0 1px 0 #d8c9a8, 0 2px 0 #f0e5cc, 0 22px 50px rgba(0,0,0,.55); }
@@ -617,7 +618,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv .nv-hastip { text-decoration: none; }
 </style>
 
-<div class="nv">
+<div class="nv is-locked">
  <nav class="nv-toolbar" aria-label="Pages"><span class="nv-whoami" data-draw="whoami"></span><button type="button" class="nv-tool nv-return">Return the book</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="all">Close every page</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="none">Open every page</button></nav>
  <div class="nv-book">
 
@@ -835,8 +836,6 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
    <div class="nv-tg-body" data-draw="tg-body">—</div>
   </div>
  </div>
-</div>
-
  <div class="nv-reg-overlay is-checking" role="dialog" aria-modal="true" aria-label="Borrower’s register">
   <div class="nv-reg">
    <div class="nv-reg-hd"><span>The Miskatonic Press Lending Library</span><b>Borrower’s Register</b></div>
@@ -853,6 +852,8 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
    <p class="nv-reg-wait">Consulting the register…</p>
   </div>
  </div>
+</div>
+
 
 </div>
 <script src="vendor/d3.min.js"></script>
@@ -1476,6 +1477,7 @@ dash.draw('reg-msg', (el) => { el.textContent = nvRegMsg; });
 dash.draw('whoami', (el) => { el.textContent = nvMe ? 'Signed out to ' + nvMe.label : ''; });
 const nvApplyReader = () => {
   document.querySelectorAll('.nv-reg-overlay').forEach((o) => { o.classList.toggle('is-open', !nvMe); o.classList.remove('is-checking'); });
+  document.querySelectorAll('.nv').forEach((n) => n.classList.toggle('is-locked', !nvMe));
   dash.draw('whoami');
   nvMatGM = nvIsKeeper(); nvClues.gm = nvIsKeeper();
   Object.values(nvMats).forEach((M) => M.sync && M.sync());
