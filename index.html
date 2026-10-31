@@ -1093,7 +1093,8 @@ dash.draw('pins', (el) => {
     };
     body.addEventListener('pointerenter', place);
     body.addEventListener('focus', place);
-    label.append(nvEl('i', '', p.when), nvEl('b', '', p.name), nvEl('em', '', p.note));
+    if (!nvBlank(p.when)) label.append(nvEl('i', '', p.when));
+    label.append(nvEl('b', '', p.name), nvEl('em', '', p.note));
     body.append(label, nvEl('span', 'nv-pin-head', base ? '\u2726' : String(nums.get(p.id))), nvEl('span', 'nv-pin-stem'));
     pin.append(body);
     el.append(pin);
@@ -1109,7 +1110,7 @@ const nvKey = (name, fixed) => dash.draw(name, (el) => {
     const base = p.kind === 'base';
     const li = nvEl('li');
     const txt = nvEl('div');
-    txt.append(nvEl('strong', '', p.name), nvEl('em', '', `${p.when}: ${p.note}`));
+    txt.append(nvEl('strong', '', p.name), nvEl('em', '', nvBlank(p.when) ? p.note : `${p.when}: ${p.note}`));
     li.append(nvEl('span', 'rd' + (base ? ' is-base' : '') + (fixed ? '' : ' is-unfixed'), base ? '\u2726' : (fixed ? String(nums.get(p.id)) : '·')), txt);
     el.append(li);
   });
