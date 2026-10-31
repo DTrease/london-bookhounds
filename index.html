@@ -23,11 +23,11 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
   background: #2b231b radial-gradient(ellipse at 50% 0%, #3a2f24 0%, #1d1712 80%);
   padding: clamp(.75rem, 4vw, 3.5rem) clamp(.5rem, 3vw, 2rem) clamp(2rem, 6vw, 5rem);
 }
-.nv-book { counter-reset: folio; display: grid; gap: clamp(1.5rem, 4vw, 3rem); }
+.nv-book { counter-reset: folio; display: flex; flex-direction: column; }
 .nv-pages { display: contents; }
 .nv-page {
   counter-increment: folio;
-  position: relative; width: 100%; max-width: 46rem; margin-inline: auto; color: var(--ink); font-family: var(--face);
+  position: relative; box-sizing: border-box; width: 100%; max-width: 54rem; min-width: 0; margin-inline: auto; margin-top: clamp(1.25rem, 3.5vw, 2.5rem); color: var(--ink); font-family: var(--face);
   font-size: clamp(1rem, 1.7vw, 1.1rem); line-height: 1.6; font-variant-numeric: oldstyle-nums proportional-nums;
   display: flex; flex-direction: column;
   padding: clamp(1.25rem, 5vw, 3rem) clamp(1.25rem, 7vw, 4.75rem) clamp(1rem, 3vw, 1.75rem);
@@ -148,7 +148,7 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
 
 
 /* folding */
-.nv-toolbar { max-width: 46rem; margin: 0 auto clamp(1rem, 3vw, 1.75rem); display: flex; justify-content: flex-end; gap: .6rem; align-items: baseline; font-family: var(--face); color: #cdbf9f; font-size: .85rem; }
+.nv-toolbar { max-width: 54rem; margin: 0 auto clamp(1rem, 3vw, 1.75rem); display: flex; justify-content: flex-end; gap: .6rem; align-items: baseline; font-family: var(--face); color: #cdbf9f; font-size: .85rem; }
 .nv-tool { all: unset; cursor: pointer; font-variant: small-caps; letter-spacing: .1em; color: #e9dcc0; border-bottom: 1px dotted rgba(233,220,192,.5); }
 .nv-tool:hover, .nv-tool:focus-visible { color: #fff; border-bottom-style: solid; }
 .nv-runhead { cursor: pointer; user-select: none; }
@@ -156,10 +156,17 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
 .nv-fold { all: unset; cursor: pointer; font-style: italic; font-variant: normal; letter-spacing: 0; }
 .nv-fold:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
 .nv-fold-i { display: none; }
-.nv-page.is-folded { min-height: 0; padding-bottom: 0; transform: none !important; animation: none; }
+.nv-page.is-folded { min-height: 0; margin-top: 3px; padding: .32rem clamp(1rem, 5vw, 3rem); transform: none !important; animation: none;
+  background: linear-gradient(180deg, #f3ead6 0%, #e8dbbd 100%);
+  box-shadow: 0 1px 0 #cbb994, 0 2px 0 #efe4ca, 0 3px 4px rgba(0,0,0,.35); }
+.nv-page.is-folded::after { display: none; }
+.nv-page.is-folded:nth-child(odd) { width: calc(100% - 4px); }
+.nv-page.is-folded:hover { background: linear-gradient(180deg, #f7efdd 0%, #ecdfc2 100%); }
+.nv-page:not(.is-folded) + .nv-page.is-folded, .nv-pages:first-child .nv-page.is-folded:first-child { margin-top: clamp(1rem, 3vw, 2rem); }
 .nv-page.is-folded > :not(.nv-runhead) { display: none; }
-.nv-page.is-folded .nv-runhead { margin-bottom: clamp(.9rem, 2.5vw, 1.4rem); }
-.nv-book { gap: clamp(1.25rem, 3.5vw, 2.5rem); }
+.nv-page.is-folded .nv-runhead { margin: 0; padding: 0; border: 0; font-size: .74rem; line-height: 1.5; }
+.nv-page.is-folded .nv-runhead > span:first-child { opacity: .7; }
+.nv-book > .nv-page:first-child { margin-top: 0; }
 
 /* seasons */
 .nv-season { all: unset; cursor: pointer; font: inherit; font-style: italic; color: var(--ink-soft); border-bottom: 1px dotted var(--faint); }
@@ -429,7 +436,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-charpage .nv-bio .nv-aside { text-align: left; }
 
 /* character sheet, laid out like the printed Trail of Cthulhu sheet */
-.nv-charpage, .nv-biopage { padding-inline: clamp(.9rem, 4vw, 2.6rem); }
+.nv-charpage, .nv-biopage { padding-inline: clamp(1rem, 4vw, 2.75rem); }
 .nv-cs { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: .5rem; font-size: .8em; line-height: 1.32; }
 .nv-cs-l { display: grid; gap: .5rem; align-content: start; }
 .nv-cs-r { display: grid; }
@@ -551,10 +558,14 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-reg-overlay.is-checking .nv-reg-sign, .nv-reg-overlay.is-checking .nv-reg-foot { visibility: hidden; }
 .nv-whoami { font-style: italic; color: #e9dcc0; margin-right: auto; }
 
-.nv-editable { outline: 1px dashed rgba(122,36,24,.55); outline-offset: 3px; cursor: text; background: rgba(255,250,235,.35); }
-.nv-editable:focus { outline: 1px solid var(--rubric); background: rgba(255,250,235,.7); }
-.nv-tool.nv-prose-edit[hidden], .nv-keeper-dot[hidden] { display: none; }
-.nv.is-prose-editing .nv-prose-edit { color: #f0d9a8; }
+.nv-contents { list-style: none; margin: 0; padding: 0; }
+.nv-contents li + li { border-top: 1px solid rgba(34,27,20,.1); }
+.nv-contents-link { all: unset; cursor: pointer; display: flex; align-items: baseline; gap: .4rem; width: 100%; box-sizing: border-box; padding: .32rem .2rem; }
+.nv-contents-link .t { font-variant: small-caps; letter-spacing: .05em; }
+.nv-contents-link .n { color: var(--rubric); min-width: 1.6rem; text-align: right; }
+.nv-contents-link .nv-lead { flex: 1; border-bottom: 1px dotted var(--faint); transform: translateY(-.3em); }
+.nv-contents-link:hover .t, .nv-contents-link:focus-visible .t { color: var(--rubric); }
+.nv-contents-link:focus-visible { outline: 1px solid var(--rubric); outline-offset: 2px; }
 /* persons */
 
 
@@ -623,7 +634,62 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 </style>
 
 <div class="nv is-locked">
- <nav class="nv-toolbar" aria-label="Pages"><span class="nv-whoami" data-draw="whoami"></span><button type="button" class="nv-tool nv-prose-edit" hidden><span data-draw="prose-edit-label">Edit the text</span></button><span class="nv-keeper-dot" aria-hidden="true" hidden>·</span><button type="button" class="nv-tool nv-return">Return the book</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="all">Close every page</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="none">Open every page</button></nav>
+<div id="book-text" hidden>
+<!-- ================================================================
+     BOOK TEXT: edit the prose of the book here.
+     Change the words between <p ...> and </p>. Leave the data-prose="..." labels alone.
+     Plain text only; curly quotes and apostrophes are fine.
+     ================================================================ -->
+
+<!-- Preface -->
+<p data-prose="preface">The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them.</p>
+
+<!-- The Premises: three paragraphs between the photographs -->
+<p data-prose="premises-1">The shop stands on a corner of New Bond Street, which is busy all day with every sort of person. It is well kept. Books fill every wall up to the high ceilings, wheeled ladders run along the left and right walls, and a gallery at the back looks down over the front of the shop. A coat room opens off the entrance. From it a crawlspace runs through to the shop next door, and it feels longer than it should.</p>
+<p data-prose="premises-2">The shop has electric light, which the owner arranged by paying the right officials. The parlour does not. It is still lit by paraffin lamps, because the owner didn’t want electricians lifting the rugs. Under them are five spots of candle wax on the floorboards, joined by thin carved lines in the shape of a pentagram. The parlour is used for book clubs and readings; the rest of the time, only close friends of the shop are let in.</p>
+<p data-prose="premises-3">Stairs in the parlour go down to the cellar store room, which has a needlessly complicated wall safe, made by a firm nobody can remember without reading the name off the door. On the roof, the owner’s assistant keeps a shed where she looks after a small flock of pigeons and a small observatory.</p>
+
+<!-- The Narrative: one summary per part -->
+<!-- 1: The Commission -->
+<p data-prose="episode:I-1">A telegram from Westoby brings the Bookhounds to the Pimander Club. There Johnstone Dives hires them to find the de Castries copy of the Caedis Urbi Verae Claves, a book said to curse any house that keeps it. Ronaldo follows a one-eyed vagrant to a stone door in John’s Walk and chalks a frog’s-eye sign on it. Meanwhile the astronomer Paul Fletcher is on his way from Cape Town to meet the art dealer Aston Drummel.</p>
+<!-- 2: Drummel’s Flat -->
+<p data-prose="episode:I-2">Bob and Ronaldo break into Drummel’s flat in Kensington. They take a Ten Bells coaster, a note from Fletcher with a symbol Bob remembers from the Boer War, and some canvases by an unknown painter called Francis Bacon. Magwich warns them to stay away from Drummel. White eyes start appearing on walls in Whitechapel. At the Ten Bells, Bacon tells everyone to bid at his auction.</p>
+<!-- 3: The Canvas -->
+<p data-prose="episode:I-3">In Bacon’s lodgings something climbs out of a painting and asks, “Who sent you?” It only backs off when they give Dives’s name. Drummel and Magwich turn up at the shop and are seen off with a shotgun. Bastion Melwig brings On the Glory of Nodens, which tells of an old British god, Nodens, at war with Byatis, a one-eyed frog-god under London.</p>
+<!-- 4: The House of Westoby -->
+<p data-prose="episode:I-4">Bob follows the address on an old silver key to a house with his own family’s portrait on the wall, a map of Whitechapel pinned in the shape of an eye, and letters from Dives. He realises he is Westoby. Charlie finds a letter by D’Onstan claiming the Ripper murders were a ritual. Left alone with the canvas, Bob agrees to help destroy the followers of Nodens and disappears into it.</p>
+<!-- Interlude: The Tribute -->
+<p data-prose="episode:I-i">Ronaldo gives one of his eyes to the emissary of Byatis. In return he can pass through Byatis’s doors.</p>
+<!-- 5: The Auction -->
+<p data-prose="episode:I-5">The Bookhounds burn the canvas, and Ronaldo disappears. Crowley tells them the Caedis Urbi Verae Claves can open or close the Eye of Byatis. At the auction in the Ten Bells, Ronaldo bursts in with the vagrants, Guzzy shoots Fletcher and then Ronaldo, and Frankie throws the book on the fire.</p>
+
+<!-- Persons of Interest: the note under each name -->
+<p data-prose="person:Ronaldo Phantassi">Gave one of his eyes to the emissary of Byatis, and now sees colours that shouldn’t exist. When the canvas burned he vanished, only to burst into the auction with the vagrants. Guzzy shot him.</p>
+<p data-prose="person:Bob Carr">Found out that he is P. L. Westoby, and went into the painting to help destroy the followers of Nodens.</p>
+<p data-prose="person:Johnstone Dives">Hired the Bookhounds to find the Caedis Urbi Verae Claves. A follower of Byatis, he worked with Westoby against the followers of Nodens.</p>
+<p data-prose="person:Paul Fletcher">Came from Cape Town to buy the Caedis Urbi Verae Claves, won the auction, and was shot for it.</p>
+<p data-prose="person:Aston Drummel">Bacon’s agent for years. After threatening the shop, he made a truce with Charlie.</p>
+<p data-prose="person:Magwich">Went after the Bookhounds twice. Frankie shot him outside Westoby’s.</p>
+<p data-prose="person:Francis Bacon">Stole the Caedis Urbi Verae Claves in France and auctioned it at the Ten Bells.</p>
+<p data-prose="person:Aleister Crowley">The Bookhounds paid him a hundred pounds to explain the Caedis Urbi Verae Claves. He laughed when it burned.</p>
+<p data-prose="person:Bastion Melwig">Brought On the Glory of Nodens to the shop, and was struck down by the painting.</p>
+<p data-prose="person:Terry Flate">Knows Francis Bacon, and most of what goes on in the pub.</p>
+<p data-prose="person:The Emissary">Servant of Byatis.</p>
+<p data-prose="person:Robert D’Onstan">Called the hero of Nodens. In 1886 he wrote that the murders were a necromantic ritual; he died soon after.</p>
+<p data-prose="person:Julian de Castries">Last showed the book off in Rome, in 1860.</p>
+<p data-prose="person:Edward VIII">King since his father’s death in January 1936. He wants to marry Mrs. Wallis Simpson, an American who is divorcing her second husband, and the government and the Church are against it.</p>
+<p data-prose="person:Mrs. Wallis Simpson">The King’s constant companion. The American papers are full of her, while the British papers have kept quiet. The question is whether she could ever be Queen.</p>
+<p data-prose="person:Stanley Baldwin">Cautious, and never without his pipe. He believes the King cannot marry Mrs. Simpson and stay on the throne, and the Dominions and the Church agree.</p>
+<p data-prose="person:Winston Churchill">Has been warning about Germany for years. In the Commons he is the King’s strongest supporter, pressing Baldwin to give the King more time.</p>
+<p data-prose="person:Joachim von Ribbentrop">Hitler’s man in London.</p>
+
+<!-- Tomes: the description of each book -->
+<p data-prose="tome:Caedis Urbi Verae Claves">This is the de Castries copy. The Latin means roughly “True Keys of Slaughter for the City.” It holds the spells to open or close the Eye of Byatis, and is said to curse any house that keeps it.</p>
+<p data-prose="tome:On the Glory of Nodens">It was published in 1886. It is a religious-sounding account of the war between Nodens and Byatis under London, and it also covers Joseph Pimander and Robert D’Onstan.</p>
+<p data-prose="tome:Balor and the Evil Eye">It was written by a Mr. Crappy. Drummel was carrying a copy.</p>
+</div>
+
+ <nav class="nv-toolbar" aria-label="Pages"><span class="nv-whoami" data-draw="whoami"></span><button type="button" class="nv-tool nv-return">Return the book</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="all">Close every page</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="none">Open every page</button></nav>
  <div class="nv-book">
 
  <article class="nv-page" id="title" data-page="title">
@@ -650,6 +716,16 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
       <div><dt>Persons of interest</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-persons" data-source="totals" data-field="persons" data-row="0">—</dd></div>
       <div><dt>Tomes encountered</dt><span class="nv-lead"></span><dd class="dash-skeleton" data-draw="t-tomes" data-source="totals" data-field="tomes" data-row="0">—</dd></div>
     </dl>
+  </div>
+  <footer class="nv-folio"></footer>
+ </article>
+
+ <article class="nv-page" id="contents-list" data-page="toc">
+  <header class="nv-runhead"><span>The London Bookhounds</span><button class="nv-fold" type="button" aria-expanded="true"><span class="nv-fold-t">Contents</span><span class="nv-fold-i" aria-hidden="true"></span></button></header>
+  <div class="nv-body">
+    <p class="nv-chapnum">Contents</p>
+    <h2 class="nv-h2">The Pages of this Book</h2>
+    <ol class="nv-contents" data-draw="contents"></ol>
   </div>
   <footer class="nv-folio"></footer>
  </article>
@@ -908,50 +984,15 @@ const nvLive = (makeQuery, onData, onGiveUp) => {
 const nvSafe = (el, fn, what) => { try { fn(); } catch (e) { console.error('[book] could not draw ' + what, e); el.append(nvEl('p', 'nv-none', `Part of this section could not be drawn (${what}).`)); } };
 // who is reading, readable from anywhere (set when the register is signed)
 const nvRole = { keeper: false, label: '' };
-const NV_PROSE_DEFAULTS = {"preface": "The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them.", "premises-1": "The shop stands on a corner of New Bond Street, which is busy all day with every sort of person. It is well kept. Books fill every wall up to the high ceilings, wheeled ladders run along the left and right walls, and a gallery at the back looks down over the front of the shop. A coat room opens off the entrance. From it a crawlspace runs through to the shop next door, and it feels longer than it should.", "premises-2": "The shop has electric light, which the owner arranged by paying the right officials. The parlour does not. It is still lit by paraffin lamps, because the owner didn’t want electricians lifting the rugs. Under them are five spots of candle wax on the floorboards, joined by thin carved lines in the shape of a pentagram. The parlour is used for book clubs and readings; the rest of the time, only close friends of the shop are let in.", "premises-3": "Stairs in the parlour go down to the cellar store room, which has a needlessly complicated wall safe, made by a firm nobody can remember without reading the name off the door. On the roof, the owner’s assistant keeps a shed where she looks after a small flock of pigeons and a small observatory."};
-const nvProse = { map: {}, col: null, edit: false, pending: false };
-const NV_PROSE_DRAWINGS = ['prose-preface', 'prose-premises-1', 'prose-premises-2', 'prose-premises-3', 'toc', 'persons', 'tomes'];
-const nvProseRedraw = () => {
-  const a = document.activeElement;
-  if (a && a.classList && a.classList.contains('nv-editable')) { nvProse.pending = true; return; }   // never redraw under someone's cursor
-  NV_PROSE_DRAWINGS.forEach((n) => dash.draw(n));
-};
-// fill an element with a block of prose; when the Keeper is editing, make it writable and save on leaving it
+// Every block of prose is read from the "BOOK TEXT" section near the top of the page markup.
+const nvProse = { map: {} };
+document.querySelectorAll('#book-text [data-prose]').forEach((n) => { nvProse.map[n.getAttribute('data-prose')] = n.textContent.replace(/\s+/g, ' ').trim(); });
 const nvProseEl = (el, key, fallback) => {
-  const saved = nvProse.map[key];
-  const text = nvBlank(saved) ? String(fallback ?? '') : String(saved);
-  el.textContent = text;
-  el._nvProse = { key, fallback: String(fallback ?? ''), text };
-  const on = !!(nvProse.edit && nvRole.keeper && nvProse.col);
-  if (!on) { el.removeAttribute('contenteditable'); el.classList.remove('nv-editable'); return el; }
-  el.contentEditable = 'plaintext-only';
-  if (el.contentEditable !== 'plaintext-only') el.contentEditable = 'true';
-  el.spellcheck = true;
-  el.classList.add('nv-editable');
-  if (el._nvProseWired) return el;          // the same element can be redrawn; wire it once
-  el._nvProseWired = true;
-  el.addEventListener('paste', (ev) => {
-    if (!el.classList.contains('nv-editable')) return;
-    ev.preventDefault();
-    const s = (ev.clipboardData || window.clipboardData).getData('text/plain');
-    document.execCommand('insertText', false, s);
-  });
-  el.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && el.classList.contains('nv-editable')) { el.textContent = el._nvProse.text; el.blur(); } });
-  el.addEventListener('blur', () => {
-    const st = el._nvProse;
-    if (!st || !el.classList.contains('nv-editable') || !nvProse.col) return;
-    const v = String(el.innerText || '').replace(/[ \t]+\n/g, '\n').trim().slice(0, 4000);
-    if (v !== st.text) {
-      const ref = nvProse.col.doc(st.key.replace(/[^A-Za-z0-9_.~:@+-]/g, '_'));
-      ((v === '' || v === st.fallback.trim()) ? ref.delete() : ref.set({ key: st.key, text: v, at: new Date().toISOString(), by: nvRole.label })).catch(() => {});
-      nvProse.map[st.key] = v;
-      st.text = v || st.fallback;
-      if (v === '') el.textContent = st.fallback;
-    }
-    if (nvProse.pending) { nvProse.pending = false; setTimeout(nvProseRedraw, 0); }
-  });
+  const v = nvProse.map[key];
+  el.textContent = nvBlank(v) ? String(fallback ?? '') : v;
   return el;
 };
+['preface', 'premises-1', 'premises-2', 'premises-3'].forEach((k) => dash.draw('prose-' + k, (el) => nvProseEl(el, k, '')));
 const nvPartName = (p) => /^\d+$/.test(String(p)) ? 'Part ' + nvRoman(Number(p)) : String(p);
 const nvOrdinal = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
 const nvSeasonName = (ch) => ({ 1: 'Gallery of the One-Eyed God', 2: 'The Shadow on the Throne' })[ch] || '';
@@ -992,6 +1033,27 @@ document.querySelectorAll('.nv-tool').forEach((btn) => btn.addEventListener('cli
   if (btn.dataset.fold === 'all') pages.forEach((p) => nvFolded.add(p.dataset.page)); else nvFolded.clear();
   nvSaveFold(); pages.forEach(nvApplyFold);
 }));
+
+
+// ---------- contents: every page, in order, each a link ----------
+const nvGoTo = (page) => {
+  if (!page) return;
+  if (nvFolded.has(page.dataset.page)) { nvFolded.delete(page.dataset.page); nvSaveFold(); nvApplyFold(page); }
+  page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+dash.draw('contents', (el) => {
+  el.replaceChildren();
+  const pages = [...document.querySelectorAll('.nv-book .nv-page[data-page]')];
+  pages.forEach((page, i) => {
+    if (page.dataset.page === 'title' || page.dataset.page === 'toc') return;
+    const t = page.querySelector('.nv-fold-t');
+    const li = nvEl('li');
+    const a = nvEl('button', 'nv-contents-link'); a.type = 'button';
+    a.append(nvEl('span', 't', t ? t.textContent : page.dataset.page), nvEl('span', 'nv-lead'), nvEl('span', 'n', String(i + 1)));
+    a.addEventListener('click', () => nvGoTo(page));
+    li.append(a); el.append(li);
+  });
+});
 
 // season tabs on the plan
 const nvSeason = () => (dash.params() || {}).season || NV_SEASON_DEFAULT;
@@ -1529,9 +1591,6 @@ const nvApplyReader = () => {
   document.querySelectorAll('.nv-reg-overlay').forEach((o) => { o.classList.toggle('is-open', !nvMe); o.classList.remove('is-checking'); });
   document.querySelectorAll('.nv').forEach((n) => n.classList.toggle('is-locked', !nvMe));
   dash.draw('whoami');
-  document.querySelectorAll('.nv-prose-edit, .nv-keeper-dot').forEach((b) => { b.hidden = !nvIsKeeper(); });
-  if (!nvIsKeeper() && nvProse.edit) { nvProse.edit = false; document.querySelectorAll('.nv').forEach((n) => n.classList.remove('is-prose-editing')); dash.draw('prose-edit-label'); }
-  NV_PROSE_DRAWINGS.forEach((n) => dash.draw(n));
   nvRole.keeper = nvIsKeeper(); nvRole.label = nvMe ? nvMe.label : '';
   nvMatGM = nvIsKeeper(); nvClues.gm = nvIsKeeper();
   Object.values(nvMats).forEach((M) => M.sync && M.sync());
@@ -1594,25 +1653,6 @@ document.querySelectorAll('.nv-return').forEach((b) => b.addEventListener('click
 
 
 // ---------- prose the Keeper can rewrite in place ----------
-Object.keys(NV_PROSE_DEFAULTS).forEach((k) => dash.draw('prose-' + k, (el) => nvProseEl(el, k, NV_PROSE_DEFAULTS[k])));
-document.querySelectorAll('.nv-prose-edit').forEach((b) => b.addEventListener('click', () => {
-  nvProse.edit = !nvProse.edit;
-  document.querySelectorAll('.nv').forEach((n) => n.classList.toggle('is-prose-editing', nvProse.edit));
-  dash.draw('prose-edit-label');
-  NV_PROSE_DRAWINGS.forEach((n) => dash.draw(n));
-}));
-dash.draw('prose-edit-label', (el) => { el.textContent = nvProse.edit ? 'Finish editing' : 'Edit the text'; });
-(async () => {
-  const db = await nvDB;
-  if (!db) return;
-  nvProse.col = db.collection('prose');
-  nvLive(() => nvProse.col, (snap) => {
-    const m = {};
-    snap.docs.forEach((d) => { const x = d.data(); if (x && x.key) m[x.key] = x.text; });
-    nvProse.map = m;
-    nvProseRedraw();
-  });
-})();
 
 // ---------- character sheets: kept in the shared record so players can edit them ----------
 const nvPC = { list: [], col: null, editing: null, pending: false };
@@ -1859,6 +1899,7 @@ dash.draw('sheets', (el) => {
   const rows = nvPCRows();
   if (!rows.length) return;
   rows.forEach((pc) => nvSafe(el, () => nvCS(pc, nvPC.editing === pc.id).forEach((pg) => el.append(pg)), 'the sheet for ' + (pc.investigator || pc.id)));
+  setTimeout(() => dash.draw('contents'), 0);
 });
 
 (async () => {
