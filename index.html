@@ -155,11 +155,12 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
 .nv-fold:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
 .nv-fold-i { display: none; }
 /* pop-out button, desktop only */
-.nv-popout { all: unset; display: none; cursor: pointer; position: absolute; top: .3rem; right: .6rem; z-index: 2; font-family: var(--face); font-size: .66rem; font-variant: small-caps; letter-spacing: .1em; color: var(--ink-soft); opacity: .6; }
+.nv-popouts { display: none; position: absolute; top: .3rem; right: .6rem; z-index: 2; gap: .9rem; }
+.nv-popout { all: unset; cursor: pointer; font-family: var(--face); font-size: .66rem; font-variant: small-caps; letter-spacing: .1em; color: var(--ink-soft); opacity: .6; }
 .nv-popout:hover, .nv-popout:focus-visible { opacity: 1; color: var(--rubric); }
 .nv-popout:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
-@media (min-width: 60rem) and (hover: hover) and (pointer: fine) { .nv-popout { display: block; } }
-.nv-page.is-folded .nv-popout, html[data-solo] .nv-popout { display: none !important; }
+@media (min-width: 60rem) and (hover: hover) and (pointer: fine) { .nv-popouts { display: flex; } }
+.nv-page.is-folded .nv-popouts, html[data-solo] .nv-popouts { display: none !important; }
 .nv-page.is-folded { min-height: 0; margin-top: 3px; padding: .32rem clamp(1rem, 5vw, 3rem); transform: none !important; animation: none;
   background: linear-gradient(180deg, #f3ead6 0%, #e8dbbd 100%);
   box-shadow: 0 1px 0 #cbb994, 0 2px 0 #efe4ca, 0 3px 4px rgba(0,0,0,.35); }
@@ -959,14 +960,19 @@ if (NV_SOLO) {
 }
 const nvAddPopout = (page) => {
   const id = page.dataset.page;
-  if (!id || NV_SOLO || page.querySelector('.nv-popout')) return;
-  const b = nvEl('button', 'nv-popout', 'Open in own window'); b.type = 'button';
+  if (!id || NV_SOLO || page.querySelector('.nv-popouts')) return;
+  const url = location.pathname + '?page=' + encodeURIComponent(id);
+  const wrap = nvEl('span', 'nv-popouts');
+  const b = nvEl('button', 'nv-popout', 'Own window'); b.type = 'button';
   b.setAttribute('aria-label', 'Open this page in its own window');
   b.addEventListener('click', () => {
     const w = Math.min(screen.availWidth, 980), h = Math.min(screen.availHeight, 1000);
-    window.open(location.pathname + '?page=' + encodeURIComponent(id), 'bookhounds-' + id, 'popup=yes,width=' + w + ',height=' + h);
+    window.open(url, 'bookhounds-' + id, 'popup=yes,width=' + w + ',height=' + h);
   });
-  page.append(b);
+  const a = nvEl('a', 'nv-popout', 'New tab'); a.href = url; a.target = '_blank'; a.rel = 'noopener';
+  a.setAttribute('aria-label', 'Open this page in a new tab');
+  wrap.append(b, a);
+  page.append(wrap);
 };
 
 // folding: which pages this viewer has closed, kept in this browser only
