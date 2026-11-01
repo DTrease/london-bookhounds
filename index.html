@@ -20,6 +20,7 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
   --paper: #f2e9d3; --paper-2: #e9dcc0; --ink: #221b14; --ink-soft: #5b4f40; --faint: #9a8a70; --rubric: #7a2418;
   --face: "Big Caslon", "Adobe Caslon Pro", "Libre Caslon Text", "Caslon", Baskerville, "Libre Baskerville", "Baskerville Old Face", Georgia, serif;
   position: relative; min-height: 100%;
+  overflow-x: hidden; overflow-x: clip;   /* hidden tooltips and shadows must never widen the page on a phone */
   background: #2b231b radial-gradient(ellipse at 50% 0%, #3a2f24 0%, #1d1712 80%);
   padding: clamp(.75rem, 4vw, 3.5rem) clamp(.5rem, 3vw, 2rem) clamp(2rem, 6vw, 5rem);
 }
@@ -153,6 +154,12 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
 .nv-fold { all: unset; cursor: pointer; font-style: italic; font-variant: normal; letter-spacing: 0; }
 .nv-fold:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
 .nv-fold-i { display: none; }
+/* pop-out button, desktop only */
+.nv-popout { all: unset; display: none; cursor: pointer; position: absolute; top: .3rem; right: .6rem; z-index: 2; font-family: var(--face); font-size: .66rem; font-variant: small-caps; letter-spacing: .1em; color: var(--ink-soft); opacity: .6; }
+.nv-popout:hover, .nv-popout:focus-visible { opacity: 1; color: var(--rubric); }
+.nv-popout:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
+@media (min-width: 60rem) and (hover: hover) and (pointer: fine) { .nv-popout { display: block; } }
+.nv-page.is-folded .nv-popout, html[data-solo] .nv-popout { display: none !important; }
 .nv-page.is-folded { min-height: 0; margin-top: 3px; padding: .32rem clamp(1rem, 5vw, 3rem); transform: none !important; animation: none;
   background: linear-gradient(180deg, #f3ead6 0%, #e8dbbd 100%);
   box-shadow: 0 1px 0 #cbb994, 0 2px 0 #efe4ca, 0 3px 4px rgba(0,0,0,.35); }
@@ -476,17 +483,17 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-bs { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: .5rem; font-size: .92em; }
 .nv-bs-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem; }
 @media (max-width: 30rem) { .nv-bs-pair { grid-template-columns: 1fr; } }
-.nv-bs-col { display: grid; gap: .5rem; align-content: start; }
+.nv-bs-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; align-content: start; }
 .nv .nv-bs-bg p { text-indent: 0; margin-bottom: .5rem; }
-.nv-bs-dp { display: grid; grid-template-columns: 1fr auto; gap: .5rem; align-items: stretch; margin-top: .4rem; font-size: .9em; }
+.nv-bs-dp { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: stretch; margin-top: .4rem; font-size: .9em; }
 .nv-bs-dpf { display: grid; gap: .15rem; align-content: end; }
-.nv-bs-dpf .nv-field { grid-template-columns: 5.6rem minmax(8rem, 1fr); }
+.nv-bs-dpf .nv-field { grid-template-columns: 5.6rem minmax(0, 1fr); }
 .nv-cs-crbox { border: 1px solid var(--ink); padding: .3rem .6rem; text-align: center; display: grid; align-content: center; min-width: 6rem; }
 .nv-cs-crbox b { font-weight: 400; font-variant: small-caps; letter-spacing: .08em; }
 .nv-cs-crbox .big { font-size: 1.5rem; line-height: 1.1; }
 .nv-bs-port .nv-inset.is-none { width: calc(100% - 8px); margin: 4px; }
 .nv-bs-noport { width: 100%; margin: 0; border: 1px dashed rgba(34,27,20,.4); aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--faint); font-style: italic; }
-@media (max-width: 34rem) { .nv-bs { grid-template-columns: 1fr; } .nv-bs-port { order: -1; } }
+@media (max-width: 34rem) { .nv-bs { grid-template-columns: minmax(0, 1fr); } .nv-bs-port { order: -1; } }
 /* edit mode */
 .nv-cs-bar { display: flex; justify-content: flex-end; align-items: center; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; padding-top: .5rem; border-top: 1px solid rgba(34,27,20,.2); }
 .nv-cs-editing { margin-right: auto; font-size: .78rem; font-style: italic; color: var(--rubric); }
@@ -632,7 +639,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 <p data-prose="person:Magwich">Went after the Bookhounds twice. Frankie shot him outside Westoby’s.</p>
 <p data-prose="person:Francis Bacon">Stole the Caedis Urbi Verae Claves in France and auctioned it at the Ten Bells.</p>
 <p data-prose="person:Aleister Crowley">The Bookhounds paid him a hundred pounds to explain the Caedis Urbi Verae Claves. He laughed when it burned.</p>
-<p data-prose="person:Bastion Melwig">Brought On the Glory of Nodens to the shop, and was struck down by the Francis Bacon's painting.</p>
+<p data-prose="person:Bastion Melwig">Brought On the Glory of Nodens to the shop, and was struck down by Francis Bacon's painting.</p>
 <p data-prose="person:Terry Flate">Knows Francis Bacon, and most of what goes on in The Ten Bells.</p>
 <p data-prose="person:The Emissary">Servant of Byatis.</p>
 <p data-prose="person:Robert D’Onstan">Called the hero of Nodens. In 1886 he wrote that the murders were a necromantic ritual; he died soon after.</p>
@@ -941,15 +948,38 @@ const nvOrdinal = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'E
 const nvSeasonName = (ch) => ({ 1: 'Gallery of the One-Eyed God', 2: 'The Shadow on the Throne' })[ch] || '';
 const NV_SEASON_DEFAULT = 'Gallery of the One-Eyed God';
 
+// pop-out: on a desktop any page can be opened alone in its own window. That window is this same book
+// with ?page=<id>: it shows just that page, ignores folding, and stays live like any other copy.
+const NV_SOLO = (() => { const m = /^[A-Za-z0-9_-]+$/.exec(new URLSearchParams(location.search).get('page') || ''); return m ? m[0] : ''; })();
+if (NV_SOLO) {
+  document.documentElement.dataset.solo = NV_SOLO;
+  const st = document.createElement('style');
+  st.textContent = '.nv-book .nv-page:not([data-page="' + NV_SOLO + '"]) { display: none; } .nv-tool[data-fold], .nv-toolbar > span[aria-hidden] { display: none; }';
+  document.head.append(st);
+}
+const nvAddPopout = (page) => {
+  const id = page.dataset.page;
+  if (!id || NV_SOLO || page.querySelector('.nv-popout')) return;
+  const b = nvEl('button', 'nv-popout', 'Open in own window'); b.type = 'button';
+  b.setAttribute('aria-label', 'Open this page in its own window');
+  b.addEventListener('click', () => {
+    const w = Math.min(screen.availWidth, 980), h = Math.min(screen.availHeight, 1000);
+    window.open(location.pathname + '?page=' + encodeURIComponent(id), 'bookhounds-' + id, 'popup=yes,width=' + w + ',height=' + h);
+  });
+  page.append(b);
+};
+
 // folding: which pages this viewer has closed, kept in this browser only
 let nvFolded = new Set();
 let nvFoldDoc = null;
 const nvSaveFold = () => { if (nvFoldDoc) nvFoldDoc.set({ ids: [...nvFolded] }).catch(() => {}); };
 const nvApplyFold = (page) => {
-  const f = nvFolded.has(page.dataset.page);
+  const f = !NV_SOLO && nvFolded.has(page.dataset.page);
   page.classList.toggle('is-folded', f);
   const b = page.querySelector('.nv-fold');
   if (b) b.setAttribute('aria-expanded', String(!f));
+  nvAddPopout(page);
+  if (NV_SOLO && page.dataset.page === NV_SOLO) { const t = page.querySelector('.nv-fold-t'); if (t) document.title = t.textContent + ' · The London Bookhounds'; }
 };
 const nvRunhead = (title) => {
   const h = nvEl('header', 'nv-runhead');
@@ -962,7 +992,7 @@ const nvBook = document.querySelector('.nv-book');
 if (nvBook) {
   nvBook.addEventListener('click', (ev) => {
     const h = ev.target.closest('.nv-runhead');
-    if (!h) return;
+    if (!h || NV_SOLO) return;
     const page = h.closest('.nv-page');
     if (!page || !page.dataset.page) return;
     const id = page.dataset.page;
