@@ -369,6 +369,14 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 /* the evidence: a ruled list in the manner of the contents, with a stamp in the margin for each note's state */
 .nv-clue-ch-h { font-weight: 400; font-variant: small-caps; letter-spacing: .14em; color: var(--rubric); text-align: center; font-size: .9rem; margin: 1.4rem 0 .2rem; padding: 0; }
 .nv-clue-ch-h:first-child { margin-top: 0; }
+.nv-clue-sec + .nv-clue-sec { margin-top: 1.4rem; }
+.nv-clue-sec > .nv-clue-ch-h { margin-top: 0; }
+.nv-clue-sec.is-collapsed > .nv-clue-ul { display: none; }
+.nv-ch-toggle { all: unset; cursor: pointer; }
+.nv-ch-toggle::before { content: ""; display: inline-block; width: .4em; height: .4em; margin-right: .65em; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-.12em) rotate(45deg); transition: transform .2s; }
+.nv-ch-toggle[aria-expanded="false"]::before { transform: translateY(-.02em) rotate(-45deg); }
+.nv-ch-toggle:hover, .nv-ch-toggle:focus-visible { color: var(--ink); }
+.nv-ch-toggle:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 4px; }
 .nv-clue-ul { list-style: none; margin: 0; padding: 0; }
 .nv-clue { position: relative; display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) auto; column-gap: .6rem; padding: .45rem 0; align-items: baseline; }
 .nv-clue + .nv-clue { border-top: 1px solid rgba(34,27,20,.12); }
@@ -745,6 +753,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 <p data-prose="person:Edward VIII">King since his father’s death in January 1936. He wants to marry Mrs. Wallis Simpson, an American who is divorcing her second husband. The government and the Church are against it.</p>
 <p data-prose="person:Mrs. Wallis Simpson">The King’s constant companion. The American papers are full of her, while the British papers have kept quiet. The question is whether she could ever be Queen.</p>
 <p data-prose="person:Stanley Baldwin">Cautious, and never without his pipe. He believes the King cannot marry Mrs. Simpson and stay on the throne, and the Dominions and the Church agree.</p>
+<p data-prose="person:Rudyard Kipling">Author of the Jungle Books and Kim, and the first writer in English to win the Nobel Prize in Literature. He died in January 1936 and was buried in Poets’ Corner at Westminster Abbey.</p>
 <p data-prose="person:Winston Churchill">Has been warning about Germany for years. In the Commons he is the King’s strongest supporter, pressing Baldwin to give the King more time.</p>
 <p data-prose="person:Joachim von Ribbentrop">Hitler’s man in London.</p>
 
@@ -906,7 +915,6 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
   <div class="nv-body">
     <p class="nv-chapnum">Appendix A</p>
     <h2 class="nv-h2">Notes on the Evidence</h2>
-    <p class="nv-aside">A note marked “Appendix B” has a fuller account there; press its title to read it.</p>
     <div class="nv-clues" data-draw="cluelist" data-source="clues_seed"></div>
     <div class="nv-clue-add" hidden>
       <select class="nv-clue-ch" aria-label="Chapter"><option value="1">Chapter One</option><option value="2" selected>Chapter Two</option></select>
@@ -915,7 +923,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
     </div>
     <section class="nv-prep" hidden>
       <h3 class="nv-clue-ch-h">In Preparation</h3>
-      <p class="nv-aside">For the Keeper’s eyes only. Write clues ahead of time here, with an account for Appendix B if they deserve one. When the players find a clue, reveal it and it joins the notes above.</p>
+      <p class="nv-aside">For the Keeper’s eyes only. Clues prepared ahead of time wait here. When the players find one, reveal it and it joins the notes above.</p>
       <ol class="nv-clue-ul" data-draw="cluesprep"></ol>
       <details class="nv-prep-import">
         <summary>Import clues</summary>
@@ -923,14 +931,6 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
         <textarea class="nv-import-text" rows="7" spellcheck="false" aria-label="Clues to import, as JSON"></textarea>
         <div class="nv-clue-form-row"><button type="button" class="nv-mat-btn nv-import-btn">Import</button><button type="button" class="nv-mat-btn nv-import-ex">Load an example</button><span class="nv-import-msg" aria-live="polite"></span></div>
       </details>
-      <div class="nv-clue-form nv-prep-add">
-        <div class="nv-clue-form-row">
-          <select class="nv-prep-ch" aria-label="Chapter"><option value="1">Chapter One</option><option value="2" selected>Chapter Two</option></select>
-          <input type="text" class="nv-prep-text" maxlength="200" placeholder="A clue to prepare" aria-label="A clue to prepare">
-        </div>
-        <textarea class="nv-prep-detail" rows="4" maxlength="4000" placeholder="Account for Appendix B (optional). Leave it blank if this clue needs no entry of its own. A blank line starts a new paragraph." aria-label="Account for Appendix B"></textarea>
-        <div class="nv-clue-form-row"><button type="button" class="nv-mat-btn nv-prep-btn">Prepare</button></div>
-      </div>
     </section>
   </div>
   <footer class="nv-folio"></footer>
@@ -2511,7 +2511,16 @@ const nvCardGet = (c, label) => {
 // clues live in the shared record so they can be added at the table.
 // A clue with an account (detail) is a major clue: it also gets an entry in Appendix B, and its note links there.
 // Clues the Keeper is preparing are kept out of that list, in the Keeper's own private space, until they are revealed.
-const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null, previews: new Set(), notes: {} };
+const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null, previews: new Set(), notes: {}, collapsed: new Set() };
+try { JSON.parse(localStorage.getItem('bookhounds-clue-collapsed') || '[]').forEach((n) => nvClues.collapsed.add(Number(n))); } catch (e) { /* no storage: every chapter starts open */ }
+// a chapter of clues folds shut and open again; the choice is remembered in this browser
+const nvToggleChapter = (sec) => {
+  const ch = Number(sec.dataset.ch), shut = !sec.classList.contains('is-collapsed');
+  sec.classList.toggle('is-collapsed', shut);
+  const b = sec.querySelector('.nv-ch-toggle'); if (b) b.setAttribute('aria-expanded', String(!shut));
+  if (shut) nvClues.collapsed.add(ch); else nvClues.collapsed.delete(ch);
+  try { localStorage.setItem('bookhounds-clue-collapsed', JSON.stringify([...nvClues.collapsed])); } catch (e) { /* not saved */ }
+};
 const NV_STATUS = ['open', 'closed', 'cold'];
 const nvHasDetail = (c) => !nvBlank(c.detail) && String(c.detail).trim() !== '';
 const nvMajor = (c) => nvHasDetail(c) || !!c.card;   // a clue with an account, or a card, has its own entry in Appendix B
@@ -2534,6 +2543,7 @@ const nvJump = (elId, soloPage) => {
   const el = document.getElementById(elId); if (!el) return;
   const page = el.closest('.nv-page');
   if (page && nvFolded.has(page.dataset.page)) { nvFolded.delete(page.dataset.page); nvSaveFold(); nvApplyFold(page); }
+  const cs = el.closest('.nv-clue-sec'); if (cs && cs.classList.contains('is-collapsed')) nvToggleChapter(cs);   // open the chapter it sits in
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   nvFlash(el);
 };
@@ -2587,7 +2597,12 @@ const nvDrawClues = (el) => {
   const nums = nvClueNums();
   const chs = [...new Set(nvClues.list.map((c) => Number(c.chapter) || 1))].sort((a, b) => a - b);
   chs.forEach((ch) => {
-    el.append(nvEl('h3', 'nv-clue-ch-h', `${nvChapterName(ch)}: ${nvSeasonName(ch)}`));
+    const shut = nvClues.collapsed.has(ch);
+    const sec = nvEl('section', 'nv-clue-sec' + (shut ? ' is-collapsed' : '')); sec.dataset.ch = String(ch);
+    const hd = nvEl('h3', 'nv-clue-ch-h');
+    const tg = nvEl('button', 'nv-ch-toggle', `${nvChapterName(ch)}: ${nvSeasonName(ch)}`); tg.type = 'button'; tg.setAttribute('aria-expanded', String(!shut));
+    tg.addEventListener('click', () => nvToggleChapter(sec));
+    hd.append(tg);
     const ul = nvEl('ol', 'nv-clue-ul');
     nvClues.list.filter((c) => (Number(c.chapter) || 1) === ch).forEach((c) => {
       const st = NV_STATUS.includes(c.status) ? c.status : 'open';
@@ -2616,7 +2631,8 @@ const nvDrawClues = (el) => {
       }
       ul.append(li);
     });
-    el.append(ul);
+    sec.append(hd, ul);
+    el.append(sec);
   });
 };
 
@@ -2782,17 +2798,6 @@ const nvPrepSync = () => {
     box.querySelector('.nv-import-ex').addEventListener('click', () => {
       fetch('data/clue_example.json').then((r) => r.text()).then((t) => { ta.value = t; msg.textContent = ''; }).catch(() => { msg.textContent = 'The example could not be loaded.'; });
     });
-  });
-  document.querySelectorAll('.nv-prep-add').forEach((box) => {
-    const sel = box.querySelector('.nv-prep-ch'), text = box.querySelector('.nv-prep-text'), detail = box.querySelector('.nv-prep-detail');
-    const add = () => {
-      if (!nvIsKeeper() || !nvClues.prepCol) return;
-      const t = String(text.value || '').trim(); if (!t) { text.focus(); return; }
-      nvClues.prepCol.add({ kind: 'prepared-clue', text: t, chapter: Number(sel.value) || 1, detail: String(detail.value || '').trim(), order: Date.now() }).catch(() => {});
-      text.value = ''; detail.value = ''; text.focus();
-    };
-    box.querySelector('.nv-prep-btn').addEventListener('click', add);
-    text.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); add(); } });
   });
 })();
 

@@ -160,6 +160,16 @@
   "chapter": 2
  },
  {
+  "name": "Rudyard Kipling",
+  "role": "Poet and storyteller; Stanley Baldwin’s cousin",
+  "note": "Author of the Jungle Books and Kim, and the first writer in English to win the Nobel Prize in Literature. He died in January 1936 and was buried in Poets’ Corner at Westminster Abbey.",
+  "standing": "Deceased",
+  "portrait": "assets/bd8d387a7a5d30760de7d3e66a49fbe7.png",
+  "portrait_caption": "From a photograph",
+  "portrait_shape": "square",
+  "chapter": 2
+ },
+ {
   "name": "Winston Churchill",
   "role": "MP for Epping, out of office since 1929",
   "note": "Has been warning about Germany for years. In the Commons he is the King’s strongest supporter, pressing Baldwin to give the King more time.",
