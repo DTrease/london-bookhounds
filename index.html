@@ -101,6 +101,29 @@ html, body { margin: 0; padding: 0; background: #1d1712; min-height: 100%; }
 .nv-premises-note { margin-top: 1.75rem !important; }
 
 /* contents */
+/* the floating index: a rubric ribbon hanging from the top right, opening to a small ruled card */
+.nv-index { position: fixed; top: 0; right: clamp(.6rem, 2.2vw, 1.8rem); z-index: 45; font-family: var(--face); color: var(--ink); }
+.nv.is-locked .nv-index, html[data-solo] .nv-index { display: none; }
+.nv-index-ribbon { display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+.nv-index-tab { all: unset; cursor: pointer; display: block; box-sizing: border-box; width: 2.7rem; padding: .45rem .2rem 1.15rem; text-align: center; background: var(--rubric); color: #f4ead2;
+  font-variant: small-caps; letter-spacing: .14em; font-size: .74rem; line-height: 1.1; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - .55rem), 0 100%); }
+.nv-index-tab:hover, .nv-index-tab:focus-visible { background: #8f2a1c; }
+.nv-index-tab:focus-visible { outline: 1px dashed #f4ead2; outline-offset: -4px; }
+.nv-index-list { display: none; position: absolute; top: 3.2rem; right: 0; width: min(17.5rem, calc(100vw - 1.2rem)); max-height: min(72vh, 30rem); overflow-y: auto; box-sizing: border-box; margin: 0; padding: .35rem .8rem .5rem;
+  list-style: none; background: var(--paper); border: 1px solid var(--ink); box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px rgba(34,27,20,.45), 0 12px 28px rgba(0,0,0,.5);
+  background-image: linear-gradient(135deg, rgba(255,255,255,.35), transparent 40%); }
+.nv-index.is-open .nv-index-list { display: block; }
+.nv-index-list li + li { border-top: 1px solid rgba(34,27,20,.12); }
+.nv-index-link { all: unset; cursor: pointer; box-sizing: border-box; width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; padding: .3rem .1rem; font-variant: small-caps; letter-spacing: .05em; font-size: .82rem; line-height: 1.25; }
+.nv-index-link .n { color: var(--rubric); font-variant-numeric: oldstyle-nums; white-space: nowrap; }
+.nv-index-link:hover .t, .nv-index-link:focus-visible .t { color: var(--rubric); }
+.nv-index-link:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 1px; }
+.nv-index-list li.is-here { box-shadow: inset 2px 0 0 var(--rubric); }
+.nv-index-list li.is-here .nv-index-link { padding-left: .5rem; }
+.nv-index-list li.is-here .t { color: var(--rubric); }
+@media (max-width: 40rem) { .nv-index-tab { width: 2.3rem; font-size: .66rem; padding-top: .4rem; padding-bottom: 1rem; } .nv-index-list { top: 2.9rem; } }
+@media (max-width: 62rem) { .nv-toolbar { box-sizing: border-box; padding-right: 3.2rem; } }   /* keep the ribbon clear of the toolbar */
+@media print { .nv-index { display: none; } }
 .nv-toc { list-style: none; padding: 0; margin: 0; }
 .nv-toc li { display: grid; grid-template-columns: 5.8rem minmax(0, 1fr); column-gap: .6rem; padding: .45rem 0; align-items: baseline; }
 .nv-toc li + li:not(.nv-toc-ch) { border-top: 1px solid rgba(34,27,20,.12); }
@@ -772,6 +795,10 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 <p data-prose="tome:Balor and the Evil Eye">It was written by an unfortunately named Mr. Crappy. Drummel was carrying a copy. We know nothing else.</p>
 </div>
 
+ <nav class="nv-index" aria-label="Index of the book">
+  <span class="nv-index-ribbon"><button type="button" class="nv-index-tab" aria-expanded="false" aria-controls="nv-index-list">Index</button></span>
+  <ol class="nv-index-list" id="nv-index-list" data-draw="indexlist"></ol>
+ </nav>
  <nav class="nv-toolbar" aria-label="Pages"><span class="nv-whoami" data-draw="whoami"></span><button type="button" class="nv-tool nv-return">Return the book</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="all">Close every page</button><span aria-hidden="true">·</span><button type="button" class="nv-tool" data-fold="none">Open every page</button></nav>
  <div class="nv-book">
 
@@ -1179,6 +1206,40 @@ dash.draw('contents', (el) => {
     li.append(a); el.append(li);
   });
 });
+
+// ---------- the floating index: a ribbon at the top right that opens a short list of the book's pages ----------
+const nvIndexLabel = (t) => String(t).replace(/^The Bookhounds: /, '').replace(/^Moses bin Spinoza, aka /, '')
+  .replace(/^Plate (I+): A Plan of the /, 'Plate $1: ').replace(/^Appendix ([A-D]): /, '$1 · ');
+const nvIndexSpy = () => {   // mark the page now at the top of the screen
+  const pages = [...document.querySelectorAll('.nv-book .nv-page[data-page]')];
+  let here = null; pages.forEach((p) => { if (p.getBoundingClientRect().top <= innerHeight * 0.35) here = p; });
+  document.querySelectorAll('.nv-index-list li').forEach((li) => {
+    const on = !!here && li.dataset.page === here.dataset.page;
+    li.classList.toggle('is-here', on); if (on) li.setAttribute('aria-current', 'location'); else li.removeAttribute('aria-current');
+  });
+};
+dash.draw('indexlist', (el) => {
+  el.replaceChildren();
+  const pages = [...document.querySelectorAll('.nv-book .nv-page[data-page]')];
+  pages.forEach((page, i) => {
+    if (page.dataset.page === 'title' || page.dataset.page === 'toc') return;
+    const t = page.querySelector('.nv-fold-t');
+    const li = nvEl('li'); li.dataset.page = page.dataset.page;
+    const a = nvEl('button', 'nv-index-link'); a.type = 'button';
+    a.append(nvEl('span', 't', nvIndexLabel(t ? t.textContent : page.dataset.page)), nvEl('span', 'n', String(i + 1)));
+    a.addEventListener('click', () => { nvGoTo(page); document.querySelectorAll('.nv-index').forEach((n) => nvIndexOpen(n, false)); });
+    li.append(a); el.append(li);
+  });
+  nvIndexSpy();
+});
+const nvIndexOpen = (nav, on) => { nav.classList.toggle('is-open', on); const b = nav.querySelector('.nv-index-tab'); if (b) b.setAttribute('aria-expanded', String(on)); };
+document.querySelectorAll('.nv-index').forEach((nav) => {
+  nav.querySelector('.nv-index-tab').addEventListener('click', () => { nvIndexOpen(nav, !nav.classList.contains('is-open')); nvIndexSpy(); });
+  document.addEventListener('pointerdown', (e) => { if (!nav.contains(e.target)) nvIndexOpen(nav, false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && nav.classList.contains('is-open')) { nvIndexOpen(nav, false); nav.querySelector('.nv-index-tab').focus(); } });
+});
+let nvSpyBusy = false;
+window.addEventListener('scroll', () => { if (nvSpyBusy) return; nvSpyBusy = true; requestAnimationFrame(() => { nvSpyBusy = false; nvIndexSpy(); }); }, { passive: true });
 
 // season tabs on the plan
 const nvSeason = () => (dash.params() || {}).season || NV_SEASON_DEFAULT;
@@ -2021,7 +2082,7 @@ dash.draw('sheets', (el) => {
   const rows = nvPCRows();
   if (!rows.length) return;
   rows.forEach((pc) => nvSafe(el, () => nvCS(pc, nvPC.editing === pc.id).forEach((pg) => el.append(pg)), 'the sheet for ' + (pc.investigator || pc.id)));
-  setTimeout(() => dash.draw('contents'), 0);
+  setTimeout(() => { dash.draw('contents'); dash.draw('indexlist'); }, 0);
 });
 
 (async () => {
@@ -2626,11 +2687,13 @@ const nvDrawClues = (el) => {
       const li = nvEl('li', 'nv-clue is-' + st);
       li.id = 'clue-row-' + c.id;
       const txt = nvEl('span', 'txt');
-      if (nvMajor(c)) {
-        const a = nvEl('button', 'nv-clue-link', c.text); a.type = 'button';
+      txt.append(document.createTextNode(c.text));
+      if (nvMajor(c)) {   // a major clue says so, and "major clue" is the link to its entry in Appendix B
+        const a = nvEl('button', 'nv-clue-link nv-clue-ref', 'major clue'); a.type = 'button';
+        a.setAttribute('aria-label', 'Major clue: read its entry in Appendix B');
         a.addEventListener('click', () => nvJump('major-' + c.id, 'majorclues'));
-        txt.append(a, nvEl('span', 'nv-clue-ref', 'Appendix B'));
-      } else txt.textContent = c.text;
+        txt.append(a);
+      }
       li.append(nvEl('span', 'num', '№ ' + nums.get(c.id)), txt);
       const stamp = nvEl('button', 'nv-stamp is-' + st, st); stamp.type = 'button';
       stamp.title = 'Click to change: open, closed, cold';
