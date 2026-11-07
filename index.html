@@ -458,12 +458,18 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .tc-ear:focus-visible { outline: 1px dashed var(--rubric); outline-offset: -3px; }
 .tc-back .tc-no { margin: 0; font-variant: small-caps; letter-spacing: .1em; color: var(--rubric); font-size: .85rem; border-bottom: 1px solid rgba(122,36,24,.35); padding-bottom: .3rem; }
 .tc-back .tc-bt { margin: 0; font-style: italic; line-height: 1.5; color: var(--ink); text-indent: 0; }
-.tc-whisper { margin: 0; min-height: 1.4em; font-style: italic; letter-spacing: .05em; color: var(--rubric); opacity: 0; transition: opacity 1.2s; text-align: center; text-indent: 0; }
-.tc-whisper.is-on { opacity: 1; }
-.tc-whisper { width: min(24rem, 100%); }
-.tc-whisper p { margin: 0 0 .7rem; text-indent: 0; }
-.tc-whisper p:last-child { margin-bottom: 0; }
-.tc-whisper .tc-inscr { font-style: normal; font-variant: small-caps; letter-spacing: .16em; font-size: .92rem; color: var(--ink); padding: .3rem 0; border-top: 1px solid rgba(34,27,20,.3); border-bottom: 1px solid rgba(34,27,20,.3); }
+/* what is found: a window over the page, and the same words set into the clue's entry in Appendix B */
+.tc-inscr { text-align: center; font-style: normal; font-variant: small-caps; letter-spacing: .16em; font-size: .92rem; color: var(--ink); padding: .35rem 0; border-top: 1px solid rgba(34,27,20,.3); border-bottom: 1px solid rgba(34,27,20,.3); text-indent: 0; }
+.tc-pop-ov { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 1rem; overflow: auto; background: rgba(20,14,8,.78); animation: tc-pop-fade .5s ease both; }
+.tc-pop { width: min(30rem, 100%); box-sizing: border-box; padding: 1.3rem 1.5rem 1.2rem; background: var(--paper); border: 1px solid var(--ink); box-shadow: 0 0 0 4px var(--paper), 0 0 0 5px rgba(34,27,20,.5), 0 14px 40px rgba(0,0,0,.55); color: var(--ink); font-family: var(--face); transform: rotate(-.3deg); }
+.tc-pop-hd { margin: 0 0 .9rem; padding-bottom: .5rem; border-bottom: 1px solid var(--ink); text-align: center; text-indent: 0; font-variant: small-caps; letter-spacing: .22em; font-size: .85rem; color: var(--rubric); }
+.tc-pop-body p { margin: 0 0 .85rem; line-height: 1.55; text-indent: 0; animation: tc-pop-line 1s ease both; }
+.tc-pop-close { margin-top: .4rem; }
+@keyframes tc-pop-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tc-pop-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tc-pop-ov, .tc-pop-body p { animation: none; } }
+.nv-found { margin: .9rem 0 0; padding-top: .7rem; border-top: 1px dotted rgba(34,27,20,.4); }
+.nv-found-tools { margin: .4rem 0 0; text-indent: 0; font-size: .8rem; }
 @media (prefers-reduced-motion: reduce) { .tc-inner { transition-duration: .01s; } .tcard { transition: none; } .tc-ring, .tc-panel.is-shaking, .tc-img.is-flicker { animation: none; } .tc-ring.is-glow { opacity: .8; } }
 /* the Keeper's import box */
 .nv-prep-import { margin: .2rem 0 .9rem; }
@@ -2049,7 +2055,7 @@ const NV_VEILS = {
   frost: { base: '#cfdde4', lo: 196, hi: 246, tint: [-12, 0, 4], smudge: '255,255,255' },
   ink: { base: '#141a2a', lo: 18, hi: 58, tint: [-8, -4, 14], smudge: '4,6,18' }
 };
-const NV_FX = ['pulse', 'glow', 'shake', 'flicker', 'image', 'flip', 'turn'];
+const NV_FX = ['pulse', 'glow', 'shake', 'flicker', 'image', 'flip'];
 const nvAssetOk = (s) => typeof s === 'string' && s.length <= 650000 &&
   (/^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,[A-Za-z0-9+\/=]+$/.test(s) || /^assets\/[A-Za-z0-9._-]+$/.test(s));
 const nvNum = (v, lo, hi, d) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
@@ -2174,7 +2180,7 @@ const nvModelView = (panel, model, onTap) => {
 
   // the camera looks at the model from a distance; the model turns
   const FOV = 35 * Math.PI / 180, TAN = Math.tan(FOV / 2);
-  const st = { q: nvQNorm(nvQMul(nvQAxis(1, 0, 0, 0.16), nvQAxis(0, 1, 0, 0.55))), D: 4.4, tx: 0, ty: 0, turnLeft: 0, vx: 0, vy: 0, spin: model.spin, glow: 0, glowT: 0, spotGlow: 0, spotGlowT: 0, visible: false, raf: 0, w: 0, h: 0 };
+  const st = { q: nvQNorm(nvQMul(nvQAxis(1, 0, 0, 0.16), nvQAxis(0, 1, 0, 0.55))), D: 4.4, tx: 0, ty: 0, vx: 0, vy: 0, spin: model.spin, glow: 0, glowT: 0, spotGlow: 0, spotGlowT: 0, visible: false, raf: 0, w: 0, h: 0 };
   const draw = () => {
     st.raf = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
@@ -2184,10 +2190,6 @@ const nvModelView = (panel, model, onTap) => {
     let busy = false;
     if (st.spin) { st.q = nvQNorm(nvQMul(nvQAxis(0, 1, 0, 0.006), st.q)); busy = true; }
     if (!ptrs.size && (Math.abs(st.vx) > 0.0003 || Math.abs(st.vy) > 0.0003)) { st.q = nvQNorm(nvQMul(nvQMul(nvQAxis(0, 1, 0, st.vx), nvQAxis(1, 0, 0, st.vy)), st.q)); st.vx *= 0.94; st.vy *= 0.94; busy = true; }
-    if (st.turnLeft > 0) {   // one slow turn about its upright axis over about two and a half seconds, easing in and out
-      const p = Math.min(1, (performance.now() - st.turnT) / 2400), tgt = 2 * Math.PI * p * p * (3 - 2 * p);
-      st.q = nvQNorm(nvQMul(nvQAxis(0, 1, 0, tgt - st.turnDone), st.q)); st.turnDone = tgt; st.turnLeft = p >= 1 ? 0 : 2 * Math.PI - tgt; busy = true;
-    }
     st.glow += (st.glowT - st.glow) * 0.08; st.spotGlow += (st.spotGlowT - st.spotGlow) * 0.06;
     if (Math.abs(st.glowT - st.glow) > 0.002 || Math.abs(st.spotGlowT - st.spotGlow) > 0.002) busy = true;
     const r = nvQMat3(st.q), f = 1 / TAN, a = w / h, n = 0.1, fa = 20;
@@ -2274,10 +2276,53 @@ const nvModelView = (panel, model, onTap) => {
   out.found = (spot, strong) => {   // light up where the hidden spot was
     gl.useProgram(prog); gl.uniform3fv(uSpot, spot.at); st.spotGlowT = strong ? 1 : 0.55; st.spotGlow = Math.max(st.spotGlow, 0.9); go();
   };
-  out.glow = (on) => { st.glowT = on ? 1 : 0; go(); };
-  out.turn = () => { st.spin = false; st.vx = st.vy = 0; st.turnT = performance.now(); st.turnDone = 0; st.turnLeft = 2 * Math.PI; go(); };
-  out.poke = go; out.hit = hit; out.st = st;   // out.hit and out.st let the page be tested from the console
+  out.glow = (on) => { st.glowT = on ? 1 : 0; go(); };  out.poke = go; out.hit = hit; out.st = st;   // out.hit and out.st let the page be tested from the console
   return out;
+};
+
+// paragraphs of found text: blank lines start a new paragraph, and a paragraph in capitals is read as an inscription
+const nvFoundParas = (text, into, cls) => {
+  String(text).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => {
+    const shout = !/[a-z]/.test(p) && (p.match(/[A-Z]/g) || []).length >= 8;
+    into.append(nvEl('p', (cls ? cls + ' ' : '') + (shout ? 'tc-inscr' : ''), p));
+  });
+};
+// what a player finds opens in a window of its own
+const nvPopup = (title, text) => {
+  const host = document.querySelector('.nv'); if (!host || !text) return;
+  host.querySelectorAll('.tc-pop-ov').forEach((o) => o.remove());
+  const back = document.activeElement;
+  const ov = nvEl('div', 'tc-pop-ov'), box = nvEl('div', 'tc-pop');
+  box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', title || 'Something found');
+  box.append(nvEl('p', 'tc-pop-hd', title || 'Found'));
+  const body = nvEl('div', 'tc-pop-body'); nvFoundParas(text, body);
+  [...body.children].forEach((p, k) => { p.style.animationDelay = (0.5 + k * 0.9) + 's'; });   // the lines come up one at a time
+  const close = nvEl('button', 'nv-mat-btn tc-pop-close', 'Close'); close.type = 'button';
+  box.append(body, close); ov.append(box);
+  const onKey = (e) => { if (e.key === 'Escape') done(); };
+  const done = () => { ov.remove(); document.removeEventListener('keydown', onKey); if (back && back.focus) try { back.focus(); } catch (e) { /* gone */ } };
+  close.addEventListener('click', done); ov.addEventListener('click', (e) => { if (e.target === ov) done(); });
+  document.addEventListener('keydown', onKey);
+  host.append(ov); close.focus();
+};
+// finds are kept in the clue itself (a list of which spots have been found), so every copy of the book shows them
+const nvSeen = new Set();
+const nvNoteFound = (id, i) => {
+  nvSeen.add(id + ':' + i);   // this copy has opened the window itself
+  const c = nvClues.list.find((x) => x.id === id); if (!c || !nvClues.col) return;
+  nvClues.col.doc(id).update({ found: [...new Set([...(Array.isArray(c.found) ? c.found : []), i])] }).catch(() => {});
+};
+// when someone else finds something while this copy is open, open the window here too
+const nvAnnounceFound = (before, after) => {
+  after.forEach((c) => {
+    if (!Array.isArray(c.found) || !c.card) return;
+    const was = before.find((b) => b.id === c.id); if (!was) return;
+    c.found.forEach((i) => {
+      if ((Array.isArray(was.found) ? was.found : []).includes(i) || nvSeen.has(c.id + ':' + i)) return;
+      nvSeen.add(c.id + ':' + i);
+      try { const s = nvCardClean(c.card).spots[i]; if (s && s.text) nvPopup(c.text, s.text); } catch (e) { /* the card cannot be read */ }
+    });
+  });
 };
 
 const nvCardEl = (card, ctx) => {
@@ -2295,16 +2340,6 @@ const nvCardEl = (card, ctx) => {
   const alt = nvEl('img', 'tc-alt'); alt.alt = ''; alt.draggable = false;
   panel.append(alt);
   let pic = img, mv = null;   // pic is what flickers: the picture, or the model's canvas
-  const whisper = nvEl('div', 'tc-whisper'); whisper.setAttribute('aria-live', 'polite');
-  // what is found is written under the card: blank lines start a new paragraph, and a paragraph in capitals is read as an inscription
-  const say = (text) => {
-    whisper.replaceChildren();
-    String(text).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => {
-      const shout = !/[a-z]/.test(p) && (p.match(/[A-Z]/g) || []).length >= 8;
-      whisper.append(nvEl('p', shout ? 'tc-inscr' : '', p));
-    });
-    whisper.classList.add('is-on');
-  };
   // a spot may need several taps before it answers. Every one must land on the spot, each within a couple of seconds of the one
   // before; a tap elsewhere, or a pause that is too long, starts the count again. The early taps give only the smallest buzz, and no sign.
   const press = (i, s, tap) => {
@@ -2313,7 +2348,7 @@ const nvCardEl = (card, ctx) => {
     if (st.taps[i] && now - st.last[i] > (s.within || 2) * 1000) st.taps[i] = 0;
     st.taps[i] = (st.taps[i] || 0) + 1; st.last[i] = now;
     if (st.taps[i] < (s.taps || 1)) { nvBuzz(8); return; }
-    st.fired.add(i); fire(s, tap);
+    st.fired.add(i); fire(s, tap, i);
   };
   const missed = () => { st.taps = {}; };
   const hasBack = !!(card.back && card.back.text);   // a card is turned over only if there is something written on the back
@@ -2326,7 +2361,7 @@ const nvCardEl = (card, ctx) => {
     panel.append(r); if (!keep) setTimeout(() => r.remove(), 1600);
   };
   const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
-  const fire = (s, tap) => {
+  const fire = (s, tap, i) => {
     const fx = s.effect, at = tap ? { x: tap.x, y: tap.y, r: 8 } : s;   // on a model the ring sits where it was touched
     if (fx.includes('pulse')) ring(at, false);
     if (fx.includes('glow')) ring(at, true);
@@ -2335,9 +2370,9 @@ const nvCardEl = (card, ctx) => {
     if (fx.includes('flicker')) restart(pic, 'is-flicker');
     if (fx.includes('image') && s.image) { alt.src = s.image; alt.classList.add('is-on'); }
     if (fx.includes('flip')) setTimeout(turn, 500);
-    if (fx.includes('turn') && mv) mv.turn();
-    if (s.text) say(s.text);
     nvBuzz([30, 40, 60]);
+    // what is found opens in a window, and is written into the clue's entry in Appendix B for everyone
+    if (s.text) { nvPopup(ctx.text, s.text); if (ctx.onFound) ctx.onFound(i); }
   };
   if (card.model) {
     panel.classList.add('is-model'); panel.dataset.nodrag = '1';
@@ -2452,7 +2487,10 @@ const nvCardEl = (card, ctx) => {
     inner.append(front, back);
   } else { cap.classList.add('no-ear'); inner.append(front); }
   cardEl.append(inner);
-  wrap.append(cardEl, whisper);
+  wrap.append(cardEl);
+  // spots that have already been found (by anyone) are treated as found here too, without the window opening again
+  wrap.markFound = (list) => { (list || []).forEach((i) => { const s = (card.spots || [])[i]; if (!s || st.fired.has(i)) return; st.fired.add(i); if (mv) mv.found(s, false); }); };
+  wrap.markFound(ctx.found);
   return wrap;
 };
 // the cards on show are kept, so a card keeps its state (rubbed clean, turned over) when the list redraws
@@ -2460,11 +2498,13 @@ const nvCardCache = new Map();
 const nvCardGet = (c, label) => {
   const sig = JSON.stringify(c.card) + '|' + c.text + '|' + label;
   const hit = nvCardCache.get(c.id);
-  if (hit && hit.sig === sig) return hit.el;
-  let el;
-  try { el = nvCardEl(nvCardClean(c.card), { label, text: c.text, chapter: nvChapterName(Number(c.chapter) || 1) }); }
-  catch (e) { console.error('[book] could not draw a card', e); el = nvEl('p', 'nv-none', 'This card could not be drawn.'); }
-  nvCardCache.set(c.id, { sig, el });
+  if (hit && hit.sig === sig) { if (hit.el.markFound) hit.el.markFound(c.found); return hit.el; }
+  let el, clean = null;
+  try {
+    clean = nvCardClean(c.card);
+    el = nvCardEl(clean, { id: c.id, label, text: c.text, chapter: nvChapterName(Number(c.chapter) || 1), found: c.found, onFound: (i) => nvNoteFound(c.id, i) });
+  } catch (e) { console.error('[book] could not draw a card', e); el = nvEl('p', 'nv-none', 'This card could not be drawn.'); }
+  nvCardCache.set(c.id, { sig, el, card: clean });
   return el;
 };
 
@@ -2602,6 +2642,16 @@ dash.draw('majorlist', (el) => {
       s.append(h, nvEl('p', 'nv-major-sub', nvChapterName(Number(c.chapter) || 1)));
       if (c.card) s.append(nvCardGet(c, '№ ' + nums.get(c.id)));
       if (nvHasDetail(c)) String(c.detail).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => s.append(nvEl('p', 'nv-major-p', p)));
+      // whatever the players have found on the card becomes part of the account
+      const cached = nvCardCache.get(c.id), spots = (cached && cached.card && cached.card.spots) || [];
+      const foundList = Array.isArray(c.found) ? [...c.found].sort((a, b) => a - b) : [];
+      const foundTexts = foundList.map((i) => spots[i] && spots[i].text).filter(Boolean);
+      if (foundTexts.length) { const f = nvEl('div', 'nv-found'); foundTexts.forEach((t) => nvFoundParas(t, f, 'nv-major-p')); s.append(f); }
+      if (nvIsKeeper() && foundList.length && nvClues.col) {
+        const clr = nvEl('button', 'nv-clue-tool', 'clear what was found'); clr.type = 'button';
+        clr.addEventListener('click', () => { if (window.confirm('Clear what the players found on this card, so it can be found again?')) nvClues.col.doc(c.id).update({ found: [] }).catch(() => {}); });
+        s.append(nvEl('p', 'nv-found-tools', '')); s.lastChild.append(clr);
+      }
       if (nvIsKeeper() && nvClues.notes[c.id]) s.append(nvKeeperNotes(nvClues.notes[c.id], true));
       const back = nvEl('button', 'nv-clue-link nv-major-back', 'Back to the notes'); back.type = 'button';
       back.addEventListener('click', () => nvJump('clue-row-' + c.id, 'evidence'));
@@ -2680,7 +2730,11 @@ const nvPrepSync = () => {
   if (!db) return;
   nvClues.gm = nvIsKeeper();
   nvClues.col = db.collection('clues');
-  nvLive(() => nvClues.col.orderBy('order'), (snap) => { nvClues.list = snap.docs.map((d) => ({ id: d.id, ...d.data() })); nvClues.live = true; nvClueRedraw(); },
+  nvLive(() => nvClues.col.orderBy('order'), (snap) => {
+      const next = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (nvClues.live) nvAnnounceFound(nvClues.list, next);
+      nvClues.list = next; nvClues.live = true; nvClueRedraw();
+    },
     () => { nvClues.col = null; nvClueRedraw(); });
   // The Keeper's drafts are kept in this browser's own private space in the shared record (the same place that remembers
   // which pages it has folded), so no other reader's copy ever fetches them, even one signed in as the Keeper.
