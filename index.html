@@ -2638,22 +2638,40 @@ const nvClueForm = (init, saveLabel, onSave, onCancel) => {
   const detail = nvEl('textarea'); detail.rows = 5; detail.maxLength = 4000; detail.value = init.detail || '';
   detail.placeholder = 'Account for Appendix B (optional). Leave it blank if this clue needs no entry of its own. A blank line starts a new paragraph.';
   detail.setAttribute('aria-label', 'Account for Appendix B');
+  const notes = nvEl('textarea'); notes.rows = 4; notes.maxLength = 4000; notes.value = init.keeper || '';
+  notes.placeholder = 'Keeper’s notes (optional). Only you see these. A blank line starts a new paragraph.';
+  notes.setAttribute('aria-label', 'Keeper’s notes');
   const btns = nvEl('div', 'nv-clue-form-row');
   const save = nvEl('button', 'nv-mat-btn', saveLabel); save.type = 'button';
   const cancel = nvEl('button', 'nv-mat-btn', 'Cancel'); cancel.type = 'button';
   save.addEventListener('click', () => {
     const t = text.value.trim(); if (!t) { text.focus(); return; }
-    onSave({ text: t, chapter: Number(sel.value) || 1, detail: detail.value.trim() });
+    onSave({ text: t, chapter: Number(sel.value) || 1, detail: detail.value.trim(), keeper: notes.value.trim() });
   });
   cancel.addEventListener('click', onCancel);
   btns.append(save, cancel);
-  box.append(row, detail, btns);
+  box.append(row, detail, notes, btns);
   return box;
 };
 const nvClueEdit = (li, c, col) => {
   nvClues.editing = c.id;
   const done = () => { nvClues.editing = null; nvClueRedraw(); };
-  li.replaceChildren(nvClueForm(c, 'Save', (v) => { col.doc(c.id).update(v).then(done).catch(() => {}); }, done));
+  // The Keeper's notes are never kept in the shared clue. A draft holds them itself; a revealed clue's notes sit in the Keeper's private space.
+  const draft = col === nvClues.prepCol;
+  const init = { ...c, keeper: draft ? (c.keeper || '') : (nvClues.notes[c.id] || '') };
+  li.replaceChildren(nvClueForm(init, 'Save', (v) => {
+    const { keeper, ...rest } = v;
+    let p;
+    if (draft) p = col.doc(c.id).update({ ...rest, keeper });
+    else {
+      p = col.doc(c.id).update(rest).then(() => {
+        if (!nvClues.prepCol) return null;
+        if (keeper) return nvClues.prepCol.doc('notes-' + c.id).set({ kind: 'clue-notes', clueId: c.id, text: keeper, order: Date.now() });
+        return nvClues.notes[c.id] !== undefined ? nvClues.prepCol.doc('notes-' + c.id).delete() : null;
+      });
+    }
+    p.then(done).catch(() => {});
+  }, done));
 };
 const nvClueTools = (c, col, onRemove) => {
   const t = nvEl('span', 'nv-clue-tools');
