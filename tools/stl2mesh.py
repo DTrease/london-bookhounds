@@ -1,13 +1,17 @@
 """Shrink a binary STL into a compact indexed mesh for the book's viewer (pure Python, no packages).
 
-usage: python stl2mesh.py in.stl out.json [cells]
+usage: python stl2mesh.py in.stl out.json [cells [top_fraction top_cells]]
   cells = how many grid cells along the longest side (more = finer, bigger). Vertices that fall in one cell are merged.
+  top_fraction, top_cells = optional: above this fraction of the height (0 to 1, e.g. 0.76 for a head) use this finer grid instead,
+  so a face keeps its detail while the body stays light. A vertex is always merged by its own position, so the surface stays closed.
 The mesh is centred, scaled so its longest side is 2, and stored as 16-bit integers (base64).
 """
 import base64, json, struct, sys, array
 
 src, dst = sys.argv[1], sys.argv[2]
 cells = int(sys.argv[3]) if len(sys.argv) > 3 else 110
+top_frac = float(sys.argv[4]) if len(sys.argv) > 4 else None
+top_cells = int(sys.argv[5]) if len(sys.argv) > 5 else cells
 
 data = open(src, 'rb').read()
 n = struct.unpack_from('<I', data, 80)[0]
@@ -25,6 +29,8 @@ size = [hi[i] - lo[i] for i in range(3)]
 print('triangles', n, 'bbox min', [round(v, 3) for v in lo], 'max', [round(v, 3) for v in hi], 'size', [round(v, 3) for v in size])
 longest = max(size)
 cell = longest / cells
+cell_top = longest / top_cells
+z_split = lo[2] + (top_frac if top_frac is not None else 2.0) * size[2]
 
 # vertex clustering: merge every vertex that lands in the same grid cell, at the mean of those vertices
 clusters = {}      # cell -> [sx, sy, sz, count]
@@ -33,7 +39,8 @@ for t in tris:
     keys = []
     for k in (0, 3, 6):
         x, y, z = t[k], t[k + 1], t[k + 2]
-        key = (int((x - lo[0]) / cell), int((y - lo[1]) / cell), int((z - lo[2]) / cell))
+        c_ = cell_top if z >= z_split else cell
+        key = (c_, int((x - lo[0]) / c_), int((y - lo[1]) / c_), int((z - lo[2]) / c_))
         c = clusters.get(key)
         if c is None:
             clusters[key] = [x, y, z, 1]

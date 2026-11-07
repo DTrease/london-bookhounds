@@ -459,6 +459,10 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .tc-back .tc-bt { margin: 0; font-style: italic; line-height: 1.5; color: var(--ink); text-indent: 0; }
 .tc-whisper { margin: 0; min-height: 1.4em; font-style: italic; letter-spacing: .05em; color: var(--rubric); opacity: 0; transition: opacity 1.2s; text-align: center; text-indent: 0; }
 .tc-whisper.is-on { opacity: 1; }
+.tc-whisper { width: min(24rem, 100%); }
+.tc-whisper p { margin: 0 0 .7rem; text-indent: 0; }
+.tc-whisper p:last-child { margin-bottom: 0; }
+.tc-whisper .tc-inscr { font-style: normal; font-variant: small-caps; letter-spacing: .16em; font-size: .92rem; color: var(--ink); padding: .3rem 0; border-top: 1px solid rgba(34,27,20,.3); border-bottom: 1px solid rgba(34,27,20,.3); }
 @media (prefers-reduced-motion: reduce) { .tc-inner { transition-duration: .01s; } .tcard { transition: none; } .tc-ring, .tc-panel.is-shaking, .tc-img.is-flicker { animation: none; } .tc-ring.is-glow { opacity: .8; } }
 /* the Keeper's import box */
 .nv-prep-import { margin: .2rem 0 .9rem; }
@@ -2041,7 +2045,7 @@ const NV_VEILS = {
   frost: { base: '#cfdde4', lo: 196, hi: 246, tint: [-12, 0, 4], smudge: '255,255,255' },
   ink: { base: '#141a2a', lo: 18, hi: 58, tint: [-8, -4, 14], smudge: '4,6,18' }
 };
-const NV_FX = ['pulse', 'glow', 'shake', 'flicker', 'image', 'flip'];
+const NV_FX = ['pulse', 'glow', 'shake', 'flicker', 'image', 'flip', 'turn'];
 const nvAssetOk = (s) => typeof s === 'string' && s.length <= 650000 &&
   (/^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,[A-Za-z0-9+\/=]+$/.test(s) || /^assets\/[A-Za-z0-9._-]+$/.test(s));
 const nvNum = (v, lo, hi, d) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
@@ -2071,8 +2075,8 @@ const nvCardClean = (raw) => {
     const fx = [...new Set([].concat((s && s.effect) || []).filter((e) => NV_FX.includes(e)))];
     // on a picture a spot is a place in percent; on a model it is a place in the model's own space (the longest side spans -1 to 1)
     const spot = model
-      ? { at: (Array.isArray(s && s.at) && s.at.length === 3 ? s.at : [0, -1, 0]).map((n) => nvNum(n, -1.5, 1.5, 0)), r: nvNum(s && s.r, 0.02, 0.6, 0.12), effect: fx, text: nvStr(s && s.text, 160) }
-      : { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 160) };
+      ? { at: (Array.isArray(s && s.at) && s.at.length === 3 ? s.at : [0, -1, 0]).map((n) => nvNum(n, -1.5, 1.5, 0)), r: nvNum(s && s.r, 0.02, 0.6, 0.12), effect: fx, text: nvStr(s && s.text, 1500), taps: Math.round(nvNum(s && s.taps, 1, 10, 1)) }
+      : { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 1500), taps: Math.round(nvNum(s && s.taps, 1, 10, 1)) };
     if (fx.includes('image')) {
       if (!nvAssetOk(s.image)) throw new Error('card.spots[' + i + '].image must be a data:image URL or a file in assets/');
       spot.image = s.image;
@@ -2166,7 +2170,7 @@ const nvModelView = (panel, model, onTap) => {
 
   // the camera looks at the model from a distance; the model turns
   const FOV = 35 * Math.PI / 180, TAN = Math.tan(FOV / 2);
-  const st = { q: nvQNorm(nvQMul(nvQAxis(1, 0, 0, 0.16), nvQAxis(0, 1, 0, 0.55))), D: 4.4, vx: 0, vy: 0, spin: model.spin, glow: 0, glowT: 0, spotGlow: 0, spotGlowT: 0, visible: false, raf: 0, w: 0, h: 0 };
+  const st = { q: nvQNorm(nvQMul(nvQAxis(1, 0, 0, 0.16), nvQAxis(0, 1, 0, 0.55))), D: 4.4, tx: 0, ty: 0, turnLeft: 0, vx: 0, vy: 0, spin: model.spin, glow: 0, glowT: 0, spotGlow: 0, spotGlowT: 0, visible: false, raf: 0, w: 0, h: 0 };
   const draw = () => {
     st.raf = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
@@ -2176,11 +2180,15 @@ const nvModelView = (panel, model, onTap) => {
     let busy = false;
     if (st.spin) { st.q = nvQNorm(nvQMul(nvQAxis(0, 1, 0, 0.006), st.q)); busy = true; }
     if (!ptrs.size && (Math.abs(st.vx) > 0.0003 || Math.abs(st.vy) > 0.0003)) { st.q = nvQNorm(nvQMul(nvQMul(nvQAxis(0, 1, 0, st.vx), nvQAxis(1, 0, 0, st.vy)), st.q)); st.vx *= 0.94; st.vy *= 0.94; busy = true; }
+    if (st.turnLeft > 0) {   // one slow turn about its upright axis over about two and a half seconds, easing in and out
+      const p = Math.min(1, (performance.now() - st.turnT) / 2400), tgt = 2 * Math.PI * p * p * (3 - 2 * p);
+      st.q = nvQNorm(nvQMul(nvQAxis(0, 1, 0, tgt - st.turnDone), st.q)); st.turnDone = tgt; st.turnLeft = p >= 1 ? 0 : 2 * Math.PI - tgt; busy = true;
+    }
     st.glow += (st.glowT - st.glow) * 0.08; st.spotGlow += (st.spotGlowT - st.spotGlow) * 0.06;
     if (Math.abs(st.glowT - st.glow) > 0.002 || Math.abs(st.spotGlowT - st.spotGlow) > 0.002) busy = true;
     const r = nvQMat3(st.q), f = 1 / TAN, a = w / h, n = 0.1, fa = 20;
     const P = [f / a, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
-    const MV = [r[0], r[1], r[2], 0, r[3], r[4], r[5], 0, r[6], r[7], r[8], 0, 0, 0, -st.D, 1];
+    const MV = [r[0], r[1], r[2], 0, r[3], r[4], r[5], 0, r[6], r[7], r[8], 0, st.tx, st.ty, -st.D, 1];
     gl.uniformMatrix4fv(uMVP, false, new Float32Array(nvMat4Mul(P, MV))); gl.uniformMatrix3fv(uRot, false, new Float32Array(r));
     gl.uniform1f(uSpotGlow, st.spotGlow); gl.uniform1f(uGlow, st.glow);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -2194,7 +2202,7 @@ const nvModelView = (panel, model, onTap) => {
     const rect = canvas.getBoundingClientRect(), nx = ((cx - rect.left) / rect.width) * 2 - 1, ny = 1 - ((cy - rect.top) / rect.height) * 2;
     const r = nvQMat3(st.q), a = rect.width / rect.height;
     const dx = nx * TAN * a, dy = ny * TAN, dz = -1, l = Math.hypot(dx, dy, dz);
-    const w = [dx / l, dy / l, dz / l], o = [0, 0, st.D];
+    const w = [dx / l, dy / l, dz / l], o = [-st.tx, -st.ty, st.D];
     const tr = (v) => [r[0] * v[0] + r[1] * v[1] + r[2] * v[2], r[3] * v[0] + r[4] * v[1] + r[5] * v[2], r[6] * v[0] + r[7] * v[1] + r[8] * v[2]];   // world to model
     const O = tr(o), Dd = tr(w); let best = Infinity;
     for (let t = 0; t < idx.length; t += 3) {
@@ -2222,9 +2230,15 @@ const nvModelView = (panel, model, onTap) => {
   canvas.addEventListener('pointermove', (e) => {
     if (!ptrs.has(e.pointerId)) return;
     const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
-    if (ptrs.size === 2) {
-      const [p, q] = [...ptrs.values()], d = Math.hypot(p[0] - q[0], p[1] - q[1]);
-      if (down) { if (down.dist) st.D = Math.max(2.4, Math.min(7, st.D * (down.dist / d))); down.dist = d; down.moved = 99; }
+    const pan = (dx, dy) => { const u = 2 * TAN * st.D / Math.max(st.h, 1); st.tx = Math.max(-1.6, Math.min(1.6, st.tx + dx * u)); st.ty = Math.max(-1.6, Math.min(1.6, st.ty - dy * u)); };
+    if (ptrs.size === 2) {   // two fingers: pinch to zoom, and slide together to move the model about
+      const [p, q] = [...ptrs.values()], d = Math.hypot(p[0] - q[0], p[1] - q[1]), cx = (p[0] + q[0]) / 2, cy = (p[1] + q[1]) / 2;
+      if (down) {
+        if (down.dist) { st.D = Math.max(1.3, Math.min(7, st.D * (down.dist / d))); pan(cx - down.cx, cy - down.cy); }
+        down.dist = d; down.cx = cx; down.cy = cy; down.moved = 99;
+      }
+    } else if (e.shiftKey || (e.buttons & 6)) {   // shift or the right button: move the model about
+      const dx = e.clientX - prev[0], dy = e.clientY - prev[1]; if (down) down.moved += 99; pan(dx, dy);
     } else {
       const dx = e.clientX - prev[0], dy = e.clientY - prev[1]; if (down) down.moved += Math.abs(dx) + Math.abs(dy);
       const k = 3.2 / Math.max(st.h, 1);
@@ -2242,7 +2256,9 @@ const nvModelView = (panel, model, onTap) => {
     if (ptrs.size === 0) down = null; go();
   };
   canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
-  canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.D = Math.max(2.4, Math.min(7, st.D * Math.exp(e.deltaY * 0.001))); st.spin = false; go(); }, { passive: false });
+  canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.D = Math.max(1.3, Math.min(7, st.D * Math.exp(e.deltaY * 0.001))); st.spin = false; go(); }, { passive: false });
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  canvas.addEventListener('dblclick', () => { st.tx = 0; st.ty = 0; st.D = 4.4; go(); });   // double-click puts the view back
   canvas.addEventListener('keydown', (e) => {
     const m = { ArrowLeft: [-0.12, 0], ArrowRight: [0.12, 0], ArrowUp: [0, -0.12], ArrowDown: [0, 0.12] }[e.key]; if (!m) return;
     e.preventDefault(); st.spin = false; st.q = nvQNorm(nvQMul(nvQMul(nvQAxis(0, 1, 0, m[0]), nvQAxis(1, 0, 0, m[1])), st.q)); go();
@@ -2255,13 +2271,14 @@ const nvModelView = (panel, model, onTap) => {
     gl.useProgram(prog); gl.uniform3fv(uSpot, spot.at); st.spotGlowT = strong ? 1 : 0.55; st.spotGlow = Math.max(st.spotGlow, 0.9); go();
   };
   out.glow = (on) => { st.glowT = on ? 1 : 0; go(); };
+  out.turn = () => { st.spin = false; st.vx = st.vy = 0; st.turnT = performance.now(); st.turnDone = 0; st.turnLeft = 2 * Math.PI; go(); };
   out.poke = go; out.hit = hit; out.st = st;   // out.hit and out.st let the page be tested from the console
   return out;
 };
 
 const nvCardEl = (card, ctx) => {
   const veil = card.veil || null;
-  const st = { cleared: !(veil && veil.type === 'scratch'), rubbed: false, painted: false, fired: new Set(), x: 0, y: 0, rot: -1, hold: null };
+  const st = { cleared: !(veil && veil.type === 'scratch'), rubbed: false, painted: false, fired: new Set(), taps: {}, x: 0, y: 0, rot: -1, hold: null };
   const wrap = nvEl('div', 'tcard-wrap');
   const cardEl = nvEl('div', 'tcard');
   cardEl.style.transform = 'rotate(-1deg)';
@@ -2274,7 +2291,23 @@ const nvCardEl = (card, ctx) => {
   const alt = nvEl('img', 'tc-alt'); alt.alt = ''; alt.draggable = false;
   panel.append(alt);
   let pic = img, mv = null;   // pic is what flickers: the picture, or the model's canvas
-  const whisper = nvEl('p', 'tc-whisper'); whisper.setAttribute('aria-live', 'polite');
+  const whisper = nvEl('div', 'tc-whisper'); whisper.setAttribute('aria-live', 'polite');
+  // what is found is written under the card: blank lines start a new paragraph, and a paragraph in capitals is read as an inscription
+  const say = (text) => {
+    whisper.replaceChildren();
+    String(text).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => {
+      const shout = !/[a-z]/.test(p) && (p.match(/[A-Z]/g) || []).length >= 8;
+      whisper.append(nvEl('p', shout ? 'tc-inscr' : '', p));
+    });
+    whisper.classList.add('is-on');
+  };
+  // a spot may need several taps before it answers; the early ones give only the smallest buzz, and no sign
+  const press = (i, s, tap) => {
+    if (st.fired.has(i)) return;
+    st.taps[i] = (st.taps[i] || 0) + 1;
+    if (st.taps[i] < (s.taps || 1)) { nvBuzz(8); return; }
+    st.fired.add(i); fire(s, tap);
+  };
   const turn = () => { cardEl.classList.toggle('is-flipped'); nvBuzz(12); };
   const ear = (label) => { const b = nvEl('button', 'tc-ear'); b.type = 'button'; b.setAttribute('aria-label', label); b.dataset.nodrag = '1'; b.addEventListener('click', turn); return b; };
 
@@ -2293,7 +2326,8 @@ const nvCardEl = (card, ctx) => {
     if (fx.includes('flicker')) restart(pic, 'is-flicker');
     if (fx.includes('image') && s.image) { alt.src = s.image; alt.classList.add('is-on'); }
     if (fx.includes('flip')) setTimeout(turn, 500);
-    if (s.text) { whisper.textContent = s.text; whisper.classList.add('is-on'); }
+    if (fx.includes('turn') && mv) mv.turn();
+    if (s.text) say(s.text);
     nvBuzz([30, 40, 60]);
   };
   if (card.model) {
@@ -2301,8 +2335,8 @@ const nvCardEl = (card, ctx) => {
     mv = nvModelView(panel, card.model, (p, sx, sy) => {
       if (!p) return;
       (card.spots || []).forEach((s, i) => {
-        if (st.fired.has(i) || Math.hypot(p[0] - s.at[0], p[1] - s.at[1], p[2] - s.at[2]) > s.r) return;
-        st.fired.add(i); fire(s, { x: sx, y: sy });
+        if (Math.hypot(p[0] - s.at[0], p[1] - s.at[1], p[2] - s.at[2]) > s.r) return;
+        press(i, s, { x: sx, y: sy });
       });
     });
     pic = mv.canvas; panel.append(mv.canvas); wrap._mv = mv;
@@ -2311,7 +2345,7 @@ const nvCardEl = (card, ctx) => {
   (card.model ? [] : (card.spots || [])).forEach((s, i) => {
     const b = nvEl('button', 'tc-spot'); b.type = 'button'; b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); b.dataset.nodrag = '1';
     b.style.left = s.x + '%'; b.style.top = s.y + '%'; b.style.setProperty('--r', String(s.r));
-    b.addEventListener('click', () => { if (st.fired.has(i)) return; st.fired.add(i); fire(s); });
+    b.addEventListener('click', () => press(i, s));
     panel.append(b);
   });
 
