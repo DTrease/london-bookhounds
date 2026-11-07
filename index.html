@@ -432,6 +432,11 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .tc-dark { position: absolute; inset: 0; z-index: 4; pointer-events: none; --lx: -999px; --ly: -999px; --lr: 70px;
   background: radial-gradient(circle at var(--lx) var(--ly), rgba(8,6,4,0) 0, rgba(8,6,4,0) calc(var(--lr) * .5), rgba(8,6,4,.97) var(--lr)); }
 .tc-panel.is-lantern { touch-action: none; cursor: crosshair; }
+.tc-panel.is-model { touch-action: none; background: radial-gradient(ellipse at 50% 38%, #3a2f24 0%, #14100c 82%); }
+.tc-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; outline: none; }
+.tc-gl:active { cursor: grabbing; }
+.tc-gl:focus-visible { outline: 1px dashed rgba(239,230,207,.7); outline-offset: -4px; }
+.tc-nogl { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 1rem; text-align: center; font-style: italic; color: #cdbf9f; text-indent: 0; }
 .tc-spot { all: unset; position: absolute; z-index: 2; width: calc(var(--r) * 2%); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; }
 .tcard-wrap.show-spots .tc-spot { outline: 1px dashed rgba(255,255,255,.85); background: rgba(122,36,24,.3); }
 .tc-ring { position: absolute; z-index: 2; width: calc(var(--r) * 2%); aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(239,230,207,.9); pointer-events: none;
@@ -2046,11 +2051,15 @@ const nvBuzz = (p) => { try { if (navigator.vibrate) navigator.vibrate(p); } cat
 const nvCardClean = (raw) => {
   if (!raw || typeof raw !== 'object') throw new Error('"card" must be an object');
   const f = raw.front || {};
-  if (!nvAssetOk(f.image)) throw new Error('card.front.image must be a data:image URL (png, jpeg, webp, gif or svg, under about 650 KB) or a file in assets/');
-  const card = { front: { image: f.image, alt: nvStr(f.alt, 200), caption: nvStr(f.caption, 80), aspect: nvNum(f.aspect, 0.4, 2.5, 1) } };
+  const model = raw.model ? nvModelClean(raw.model) : null;   // a 3D model stands in for the front picture
+  if (!model && !nvAssetOk(f.image)) throw new Error('card.front.image must be a data:image URL (png, jpeg, webp, gif or svg, under about 650 KB) or a file in assets/');
+  if (f.image && !nvAssetOk(f.image)) throw new Error('card.front.image is not a usable picture');
+  const card = { front: { alt: nvStr(f.alt, 200), caption: nvStr(f.caption, 80), aspect: nvNum(f.aspect, 0.4, 2.5, model ? 0.8 : 1) } };
+  if (f.image) card.front.image = f.image;
+  if (model) card.model = model;
   const bt = nvStr(raw.back && raw.back.text, 400);
   if (bt) card.back = { text: bt };
-  const v = raw.veil;
+  const v = model ? null : raw.veil;
   if (v) {
     if (v.type === 'scratch') card.veil = { type: 'scratch', style: NV_VEILS[v.style] ? v.style : 'soot' };
     else if (v.type === 'lantern') card.veil = { type: 'lantern', radius: nvNum(v.radius, 8, 60, 22) };
@@ -2060,7 +2069,10 @@ const nvCardClean = (raw) => {
   if (spots.length > 8) throw new Error('A card may have at most 8 hidden spots');
   card.spots = spots.map((s, i) => {
     const fx = [...new Set([].concat((s && s.effect) || []).filter((e) => NV_FX.includes(e)))];
-    const spot = { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 160) };
+    // on a picture a spot is a place in percent; on a model it is a place in the model's own space (the longest side spans -1 to 1)
+    const spot = model
+      ? { at: (Array.isArray(s && s.at) && s.at.length === 3 ? s.at : [0, -1, 0]).map((n) => nvNum(n, -1.5, 1.5, 0)), r: nvNum(s && s.r, 0.02, 0.6, 0.12), effect: fx, text: nvStr(s && s.text, 160) }
+      : { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 160) };
     if (fx.includes('image')) {
       if (!nvAssetOk(s.image)) throw new Error('card.spots[' + i + '].image must be a data:image URL or a file in assets/');
       spot.image = s.image;
@@ -2069,6 +2081,182 @@ const nvCardClean = (raw) => {
   });
   if (JSON.stringify(card).length > 900000) throw new Error('This card is too large (the limit is about 900 KB in all). Use smaller or fewer pictures.');
   return card;
+};
+
+// ---------- a model on a card: a small WebGL viewer for one lit mesh (no outside library) ----------
+// The mesh is made from an STL by a converter kept outside the repository: 16-bit positions "v" and 16-bit indices "i", base64,
+// centred, with its longest side spanning -1 to 1, and Z up as exported (turned to Y up here).
+const NV_LOOKS = {
+  stone: { base: [0.43, 0.40, 0.35], tone: [0.64, 0.60, 0.52], shine: 14, metal: 0.12 },
+  bronze: { base: [0.42, 0.27, 0.12], tone: [0.20, 0.34, 0.27], shine: 36, metal: 1.0 },
+  jade: { base: [0.16, 0.38, 0.27], tone: [0.30, 0.56, 0.42], shine: 60, metal: 0.6 },
+  bone: { base: [0.80, 0.73, 0.58], tone: [0.62, 0.55, 0.42], shine: 10, metal: 0.1 }
+};
+const nvB64Bytes = (s) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i += 1) u[i] = b.charCodeAt(i); return u; };
+const nvModelClean = (m) => {
+  const mesh = (m && m.mesh) || {};
+  const ok = (s) => typeof s === 'string' && s.length > 0 && s.length <= 600000 && /^[A-Za-z0-9+\/=]+$/.test(s);
+  if (!ok(mesh.v) || !ok(mesh.i)) throw new Error('card.model.mesh needs "v" and "i" from the converter, each under about 600 KB');
+  const vb = nvB64Bytes(mesh.v).length, ib = nvB64Bytes(mesh.i).length;
+  if (vb % 6 || ib % 6 || !vb || !ib) throw new Error('card.model.mesh is not a valid mesh');
+  const idx = new Uint16Array(nvB64Bytes(mesh.i).buffer), nv = vb / 6;
+  for (let k = 0; k < idx.length; k += 1) if (idx[k] >= nv) throw new Error('card.model.mesh has an index outside the mesh');
+  return { mesh: { v: mesh.v, i: mesh.i }, look: NV_LOOKS[m.look] ? m.look : 'stone', spin: m.spin !== false };
+};
+
+const NV_VS = 'attribute vec3 aPos; attribute vec3 aNor; uniform mat4 uMVP; uniform mat3 uRot; varying vec3 vN; varying vec3 vO;' +
+  'void main(){ vN = uRot * aNor; vO = aPos; gl_Position = uMVP * vec4(aPos, 1.0); }';
+const NV_FS = 'precision mediump float; varying vec3 vN; varying vec3 vO;' +
+  'uniform vec3 uBase; uniform vec3 uTone; uniform float uShine; uniform float uMetal; uniform vec3 uSpot; uniform float uSpotGlow; uniform float uGlow;' +
+  'float h(vec3 p){ return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }' +
+  'float vn(vec3 p){ vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);' +
+  ' return mix(mix(mix(h(i), h(i + vec3(1,0,0)), f.x), mix(h(i + vec3(0,1,0)), h(i + vec3(1,1,0)), f.x), f.y),' +
+  '   mix(mix(h(i + vec3(0,0,1)), h(i + vec3(1,0,1)), f.x), mix(h(i + vec3(0,1,1)), h(i + vec3(1,1,1)), f.x), f.y), f.z); }' +
+  'void main(){ vec3 N = normalize(vN);' +
+  ' float g = vn(vO * 26.0) * 0.6 + vn(vO * 95.0) * 0.4;' +
+  ' vec3 col = mix(uBase, uTone, g);' +
+  ' vec3 L1 = normalize(vec3(-0.45, 0.65, 0.75)); vec3 L2 = normalize(vec3(0.8, -0.1, 0.35)); vec3 V = vec3(0.0, 0.0, 1.0);' +
+  ' float d1 = max(dot(N, L1), 0.0); float d2 = max(dot(N, L2), 0.0);' +
+  ' float sp = pow(max(dot(N, normalize(L1 + V)), 0.0), uShine);' +
+  ' float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);' +
+  ' vec3 lit = col * (0.2 + 0.9 * d1 + 0.22 * d2) + vec3(0.95, 0.88, 0.75) * sp * (0.12 + 0.55 * uMetal) + vec3(0.4, 0.34, 0.26) * rim * 0.3;' +
+  ' float sg = uSpotGlow * smoothstep(0.2, 0.0, distance(vO, uSpot));' +
+  ' lit += vec3(0.8, 0.16, 0.08) * sg + vec3(0.55, 0.1, 0.05) * uGlow * rim;' +
+  ' gl_FragColor = vec4(lit, 1.0); }';
+
+const nvQMul = (a, b) => [a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1], a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+  a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3], a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
+const nvQAxis = (x, y, z, a) => { const s = Math.sin(a / 2); return [x * s, y * s, z * s, Math.cos(a / 2)]; };
+const nvQNorm = (q) => { const l = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return [q[0] / l, q[1] / l, q[2] / l, q[3] / l]; };
+const nvQMat3 = (q) => { const [x, y, z, w] = q;   // column-major
+  return [1 - 2 * (y * y + z * z), 2 * (x * y + z * w), 2 * (x * z - y * w), 2 * (x * y - z * w), 1 - 2 * (x * x + z * z), 2 * (y * z + x * w), 2 * (x * z + y * w), 2 * (y * z - x * w), 1 - 2 * (x * x + y * y)]; };
+const nvMat4Mul = (a, b) => { const o = new Array(16); for (let c = 0; c < 4; c += 1) for (let r = 0; r < 4; r += 1) { let s = 0; for (let k = 0; k < 4; k += 1) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; };
+
+// returns { canvas, found(spot), poke }; onTap(spot|null, screenX%, screenY%) is called for a tap
+const nvModelView = (panel, model, onTap) => {
+  const look = NV_LOOKS[model.look] || NV_LOOKS.stone;
+  const canvas = nvEl('canvas', 'tc-gl'); canvas.tabIndex = 0;
+  canvas.setAttribute('aria-label', 'A model you can turn. Drag it, or use the arrow keys.');
+  const gl = canvas.getContext('webgl', { antialias: true, alpha: true }) || canvas.getContext('experimental-webgl');
+  const out = { canvas, found: () => {}, ok: !!gl };
+  if (!gl) { panel.append(nvEl('p', 'tc-nogl', 'This device cannot show the model.')); return out; }
+
+  // decode the mesh; the exported Z axis (up) becomes Y, and normals are worked out smooth
+  const vi = new Int16Array(nvB64Bytes(model.mesh.v).buffer), idx = new Uint16Array(nvB64Bytes(model.mesh.i).buffer);
+  const nv = vi.length / 3, pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3);
+  for (let i = 0; i < nv; i += 1) { const x = vi[i * 3] / 32767, y = vi[i * 3 + 1] / 32767, z = vi[i * 3 + 2] / 32767; pos[i * 3] = x; pos[i * 3 + 1] = z; pos[i * 3 + 2] = -y; }
+  for (let t = 0; t < idx.length; t += 3) {
+    const a = idx[t] * 3, b = idx[t + 1] * 3, c = idx[t + 2] * 3;
+    const ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2], vx = pos[c] - pos[a], vy = pos[c + 1] - pos[a + 1], vz = pos[c + 2] - pos[a + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    for (const k of [a, b, c]) { nor[k] += nx; nor[k + 1] += ny; nor[k + 2] += nz; }
+  }
+  for (let i = 0; i < nv; i += 1) { const l = Math.hypot(nor[i * 3], nor[i * 3 + 1], nor[i * 3 + 2]) || 1; nor[i * 3] /= l; nor[i * 3 + 1] /= l; nor[i * 3 + 2] /= l; }
+
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, NV_VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, NV_FS)); gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = (data, attr) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); const l = gl.getAttribLocation(prog, attr); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, 3, gl.FLOAT, false, 0, 0); };
+  buf(pos, 'aPos'); buf(nor, 'aNor');
+  const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
+  const U = (n) => gl.getUniformLocation(prog, n);
+  const uMVP = U('uMVP'), uRot = U('uRot'), uSpot = U('uSpot'), uSpotGlow = U('uSpotGlow'), uGlow = U('uGlow');
+  gl.uniform3fv(U('uBase'), look.base); gl.uniform3fv(U('uTone'), look.tone); gl.uniform1f(U('uShine'), look.shine); gl.uniform1f(U('uMetal'), look.metal);
+  gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE); gl.clearColor(0, 0, 0, 0);
+
+  // the camera looks at the model from a distance; the model turns
+  const FOV = 35 * Math.PI / 180, TAN = Math.tan(FOV / 2);
+  const st = { q: nvQNorm(nvQMul(nvQAxis(1, 0, 0, 0.16), nvQAxis(0, 1, 0, 0.55))), D: 4.4, vx: 0, vy: 0, spin: model.spin, glow: 0, glowT: 0, spotGlow: 0, spotGlowT: 0, visible: false, raf: 0, w: 0, h: 0 };
+  const draw = () => {
+    st.raf = 0;
+    const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    gl.viewport(0, 0, canvas.width, canvas.height); st.w = w; st.h = h;
+    let busy = false;
+    if (st.spin) { st.q = nvQNorm(nvQMul(nvQAxis(0, 1, 0, 0.006), st.q)); busy = true; }
+    if (!ptrs.size && (Math.abs(st.vx) > 0.0003 || Math.abs(st.vy) > 0.0003)) { st.q = nvQNorm(nvQMul(nvQMul(nvQAxis(0, 1, 0, st.vx), nvQAxis(1, 0, 0, st.vy)), st.q)); st.vx *= 0.94; st.vy *= 0.94; busy = true; }
+    st.glow += (st.glowT - st.glow) * 0.08; st.spotGlow += (st.spotGlowT - st.spotGlow) * 0.06;
+    if (Math.abs(st.glowT - st.glow) > 0.002 || Math.abs(st.spotGlowT - st.spotGlow) > 0.002) busy = true;
+    const r = nvQMat3(st.q), f = 1 / TAN, a = w / h, n = 0.1, fa = 20;
+    const P = [f / a, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
+    const MV = [r[0], r[1], r[2], 0, r[3], r[4], r[5], 0, r[6], r[7], r[8], 0, 0, 0, -st.D, 1];
+    gl.uniformMatrix4fv(uMVP, false, new Float32Array(nvMat4Mul(P, MV))); gl.uniformMatrix3fv(uRot, false, new Float32Array(r));
+    gl.uniform1f(uSpotGlow, st.spotGlow); gl.uniform1f(uGlow, st.glow);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_SHORT, 0);
+    if (busy && st.visible) st.raf = requestAnimationFrame(draw);
+  };
+  const go = () => { if (!st.raf && st.visible) st.raf = requestAnimationFrame(draw); };
+
+  // where does a tap land on the model? (the ray goes into model space, then through every triangle)
+  const hit = (cx, cy) => {
+    const rect = canvas.getBoundingClientRect(), nx = ((cx - rect.left) / rect.width) * 2 - 1, ny = 1 - ((cy - rect.top) / rect.height) * 2;
+    const r = nvQMat3(st.q), a = rect.width / rect.height;
+    const dx = nx * TAN * a, dy = ny * TAN, dz = -1, l = Math.hypot(dx, dy, dz);
+    const w = [dx / l, dy / l, dz / l], o = [0, 0, st.D];
+    const tr = (v) => [r[0] * v[0] + r[1] * v[1] + r[2] * v[2], r[3] * v[0] + r[4] * v[1] + r[5] * v[2], r[6] * v[0] + r[7] * v[1] + r[8] * v[2]];   // world to model
+    const O = tr(o), Dd = tr(w); let best = Infinity;
+    for (let t = 0; t < idx.length; t += 3) {
+      const A = idx[t] * 3, B = idx[t + 1] * 3, C = idx[t + 2] * 3;
+      const e1x = pos[B] - pos[A], e1y = pos[B + 1] - pos[A + 1], e1z = pos[B + 2] - pos[A + 2], e2x = pos[C] - pos[A], e2y = pos[C + 1] - pos[A + 1], e2z = pos[C + 2] - pos[A + 2];
+      const px = Dd[1] * e2z - Dd[2] * e2y, py = Dd[2] * e2x - Dd[0] * e2z, pz = Dd[0] * e2y - Dd[1] * e2x;
+      const det = e1x * px + e1y * py + e1z * pz; if (Math.abs(det) < 1e-9) continue;
+      const inv = 1 / det, sx = O[0] - pos[A], sy = O[1] - pos[A + 1], sz = O[2] - pos[A + 2];
+      const u = (sx * px + sy * py + sz * pz) * inv; if (u < 0 || u > 1) continue;
+      const qx = sy * e1z - sz * e1y, qy = sz * e1x - sx * e1z, qz = sx * e1y - sy * e1x;
+      const v = (Dd[0] * qx + Dd[1] * qy + Dd[2] * qz) * inv; if (v < 0 || u + v > 1) continue;
+      const tt = (e2x * qx + e2y * qy + e2z * qz) * inv; if (tt > 0 && tt < best) best = tt;
+    }
+    return best === Infinity ? null : [O[0] + Dd[0] * best, O[1] + Dd[1] * best, O[2] + Dd[2] * best];
+  };
+
+  // touch and mouse: drag to turn, pinch or wheel to come closer, tap to touch
+  const ptrs = new Map(); let down = null;
+  canvas.addEventListener('pointerdown', (e) => {
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* the pointer has already gone */ }
+    ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    st.spin = false; st.vx = st.vy = 0;
+    down = { x: e.clientX, y: e.clientY, t: performance.now(), moved: ptrs.size > 1 ? 99 : 0, dist: 0 };
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!ptrs.has(e.pointerId)) return;
+    const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 2) {
+      const [p, q] = [...ptrs.values()], d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+      if (down) { if (down.dist) st.D = Math.max(2.4, Math.min(7, st.D * (down.dist / d))); down.dist = d; down.moved = 99; }
+    } else {
+      const dx = e.clientX - prev[0], dy = e.clientY - prev[1]; if (down) down.moved += Math.abs(dx) + Math.abs(dy);
+      const k = 3.2 / Math.max(st.h, 1);
+      st.q = nvQNorm(nvQMul(nvQMul(nvQAxis(0, 1, 0, dx * k), nvQAxis(1, 0, 0, dy * k)), st.q)); st.vx = dx * k * 0.6; st.vy = dy * k * 0.6; st.lastMove = performance.now();
+    }
+    go();
+  });
+  const up = (e) => {
+    const was = ptrs.has(e.pointerId); ptrs.delete(e.pointerId);
+    if (performance.now() - (st.lastMove || 0) > 80) st.vx = st.vy = 0;   // held still before letting go: no coasting
+    if (was && down && ptrs.size === 0 && down.moved < 6 && performance.now() - down.t < 500) {
+      const p = hit(e.clientX, e.clientY), rect = canvas.getBoundingClientRect();
+      onTap(p, ((e.clientX - rect.left) / rect.width) * 100, ((e.clientY - rect.top) / rect.height) * 100);
+    }
+    if (ptrs.size === 0) down = null; go();
+  };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('wheel', (e) => { e.preventDefault(); st.D = Math.max(2.4, Math.min(7, st.D * Math.exp(e.deltaY * 0.001))); st.spin = false; go(); }, { passive: false });
+  canvas.addEventListener('keydown', (e) => {
+    const m = { ArrowLeft: [-0.12, 0], ArrowRight: [0.12, 0], ArrowUp: [0, -0.12], ArrowDown: [0, 0.12] }[e.key]; if (!m) return;
+    e.preventDefault(); st.spin = false; st.q = nvQNorm(nvQMul(nvQMul(nvQAxis(0, 1, 0, m[0]), nvQAxis(1, 0, 0, m[1])), st.q)); go();
+  });
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); st.visible = false; });
+  if (typeof ResizeObserver === 'function') new ResizeObserver(go).observe(canvas);
+  if (typeof IntersectionObserver === 'function') new IntersectionObserver((es) => { st.visible = es.some((x) => x.isIntersecting); go(); }).observe(canvas); else { st.visible = true; go(); }
+
+  out.found = (spot, strong) => {   // light up where the hidden spot was
+    gl.useProgram(prog); gl.uniform3fv(uSpot, spot.at); st.spotGlowT = strong ? 1 : 0.55; st.spotGlow = Math.max(st.spotGlow, 0.9); go();
+  };
+  out.glow = (on) => { st.glowT = on ? 1 : 0; go(); };
+  out.poke = go; out.hit = hit; out.st = st;   // out.hit and out.st let the page be tested from the console
+  return out;
 };
 
 const nvCardEl = (card, ctx) => {
@@ -2081,9 +2269,11 @@ const nvCardEl = (card, ctx) => {
   const front = nvEl('div', 'tc-face tc-front'), back = nvEl('div', 'tc-face tc-back');
   const grip = nvEl('span', 'tc-grip'); grip.setAttribute('aria-hidden', 'true');
   const panel = nvEl('div', 'tc-panel'); panel.style.setProperty('--ar', String(card.front.aspect));
-  const img = nvEl('img', 'tc-img'); img.src = card.front.image; img.alt = card.front.alt; img.draggable = false;
+  const img = nvEl('img', 'tc-img'); img.alt = card.front.alt; img.draggable = false;
+  if (card.front.image) { img.src = card.front.image; panel.append(img); }
   const alt = nvEl('img', 'tc-alt'); alt.alt = ''; alt.draggable = false;
-  panel.append(img, alt);
+  panel.append(alt);
+  let pic = img, mv = null;   // pic is what flickers: the picture, or the model's canvas
   const whisper = nvEl('p', 'tc-whisper'); whisper.setAttribute('aria-live', 'polite');
   const turn = () => { cardEl.classList.toggle('is-flipped'); nvBuzz(12); };
   const ear = (label) => { const b = nvEl('button', 'tc-ear'); b.type = 'button'; b.setAttribute('aria-label', label); b.dataset.nodrag = '1'; b.addEventListener('click', turn); return b; };
@@ -2094,18 +2284,31 @@ const nvCardEl = (card, ctx) => {
     panel.append(r); if (!keep) setTimeout(() => r.remove(), 1600);
   };
   const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
-  const fire = (s) => {
-    const fx = s.effect;
-    if (fx.includes('pulse')) ring(s, false);
-    if (fx.includes('glow')) ring(s, true);
+  const fire = (s, tap) => {
+    const fx = s.effect, at = tap ? { x: tap.x, y: tap.y, r: 8 } : s;   // on a model the ring sits where it was touched
+    if (fx.includes('pulse')) ring(at, false);
+    if (fx.includes('glow')) ring(at, true);
+    if (mv) mv.found(s, fx.includes('glow'));
     if (fx.includes('shake')) restart(panel, 'is-shaking');
-    if (fx.includes('flicker')) restart(img, 'is-flicker');
+    if (fx.includes('flicker')) restart(pic, 'is-flicker');
     if (fx.includes('image') && s.image) { alt.src = s.image; alt.classList.add('is-on'); }
     if (fx.includes('flip')) setTimeout(turn, 500);
     if (s.text) { whisper.textContent = s.text; whisper.classList.add('is-on'); }
     nvBuzz([30, 40, 60]);
   };
-  (card.spots || []).forEach((s, i) => {
+  if (card.model) {
+    panel.classList.add('is-model'); panel.dataset.nodrag = '1';
+    mv = nvModelView(panel, card.model, (p, sx, sy) => {
+      if (!p) return;
+      (card.spots || []).forEach((s, i) => {
+        if (st.fired.has(i) || Math.hypot(p[0] - s.at[0], p[1] - s.at[1], p[2] - s.at[2]) > s.r) return;
+        st.fired.add(i); fire(s, { x: sx, y: sy });
+      });
+    });
+    pic = mv.canvas; panel.append(mv.canvas); wrap._mv = mv;
+    wrap.showSpots = () => { if (card.spots && card.spots[0]) mv.found(card.spots[0], false); };   // for the Keeper's preview
+  }
+  (card.model ? [] : (card.spots || [])).forEach((s, i) => {
     const b = nvEl('button', 'tc-spot'); b.type = 'button'; b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); b.dataset.nodrag = '1';
     b.style.left = s.x + '%'; b.style.top = s.y + '%'; b.style.setProperty('--r', String(s.r));
     b.addEventListener('click', () => { if (st.fired.has(i)) return; st.fired.add(i); fire(s); });
@@ -2383,7 +2586,8 @@ dash.draw('cluesprep', (el) => {
       const box = nvEl('div', 'nv-clue-preview');
       try {
         const w = nvCardEl(nvCardClean(c.card), { label: 'Draft', text: c.text, chapter: nvChapterName(Number(c.chapter) || 1) });
-        w.classList.add('show-spots'); box.append(w, nvEl('p', 'nv-aside', 'A preview, with the hidden spots marked. Players see no marks.'));
+        w.classList.add('show-spots'); if (w.showSpots) w.showSpots();
+        box.append(w, nvEl('p', 'nv-aside', 'A preview, with the hidden spots marked. Players see no marks.'));
       } catch (e) { box.append(nvEl('p', 'nv-none', 'This card has a problem: ' + e.message)); }
       li.append(box);
     }
