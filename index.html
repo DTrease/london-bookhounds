@@ -366,25 +366,51 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 @keyframes nv-glitch-run { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 .nv-whisper.is-glitch { font-family: "Courier New", Courier, monospace; font-style: normal; letter-spacing: .18em; color: var(--rubric);
   text-shadow: 2px 0 rgba(0,200,180,.7), -2px 0 rgba(200,0,60,.7); display: inline-block; transform: skewX(-12deg) translateX(2px); }
-.nv-clue-ch-h { font-weight: 400; font-variant: small-caps; letter-spacing: .14em; color: var(--rubric); text-align: center; font-size: .9rem; margin: 1rem 0 .4rem; border-bottom: 1px solid rgba(122,36,24,.3); padding-bottom: .2rem; }
+/* the evidence: a ruled list in the manner of the contents, with a stamp in the margin for each note's state */
+.nv-clue-ch-h { font-weight: 400; font-variant: small-caps; letter-spacing: .14em; color: var(--rubric); text-align: center; font-size: .9rem; margin: 1.4rem 0 .2rem; padding: 0; }
 .nv-clue-ch-h:first-child { margin-top: 0; }
-.nv-clue-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
-.nv-card { position: relative; display: grid; grid-template-columns: 2.6rem 1fr auto; align-items: center; gap: .6rem; padding: .45rem .6rem .45rem .5rem;
-  background: #fbf6e8; border: 1px solid rgba(34,27,20,.28); box-shadow: 1px 2px 0 rgba(34,27,20,.12);
-  background-image: linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(122,36,24,.08) 0); }
-.nv-card:nth-child(odd) { transform: rotate(-.25deg); } .nv-card:nth-child(even) { transform: rotate(.3deg); }
-.nv-card .num { font-variant: small-caps; color: var(--rubric); font-size: .8rem; letter-spacing: .04em; border-right: 1px solid rgba(122,36,24,.35); padding-right: .4rem; }
-.nv-card .txt { font-size: .93em; line-height: 1.4; }
-.nv-card.is-closed .txt { color: var(--ink-soft); }
-.nv-card.is-cold .txt { color: #8a8478; font-style: italic; }
-.nv-stamp { all: unset; cursor: pointer; font-family: "Courier New", Courier, monospace; font-weight: 700; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
-  padding: .12rem .45rem; border: 2px solid currentColor; border-radius: 3px; transform: rotate(-6deg); opacity: .85; mix-blend-mode: multiply; min-width: 4.6rem; text-align: center; }
-.nv-stamp:hover, .nv-stamp:focus-visible { opacity: 1; transform: rotate(-6deg) scale(1.06); }
-.nv-stamp.is-open { color: #a3241b; }
-.nv-stamp.is-closed { color: #2b2620; }
-.nv-stamp.is-cold { color: #5f7480; border-style: dashed; }
-.nv-clue-x { position: absolute; right: -.4rem; top: -.4rem; width: 1rem; height: 1rem; border-radius: 50%; border: 0; background: var(--rubric); color: #f7f0de; cursor: pointer; font-size: .7rem; line-height: 1rem; padding: 0; opacity: 0; }
-.nv-card:hover .nv-clue-x, .nv-clue-x:focus-visible { opacity: 1; }
+.nv-clue-ul { list-style: none; margin: 0; padding: 0; }
+.nv-clue { position: relative; display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) auto; column-gap: .6rem; padding: .45rem 0; align-items: baseline; }
+.nv-clue + .nv-clue { border-top: 1px solid rgba(34,27,20,.12); }
+.nv-clue .num { font-variant: small-caps; color: var(--rubric); letter-spacing: .06em; white-space: nowrap; }
+.nv-clue .txt { line-height: 1.45; min-width: 0; overflow-wrap: anywhere; }
+.nv-clue.is-closed .txt { color: var(--ink-soft); }
+.nv-clue.is-cold .txt { color: var(--faint); font-style: italic; }
+.nv-clue-link { all: unset; cursor: pointer; border-bottom: 1px dotted var(--rubric); }
+.nv-clue-link:hover, .nv-clue-link:focus-visible { color: var(--rubric); }
+.nv-clue-link:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
+.nv-clue-ref { margin-left: .5rem; font-variant: small-caps; letter-spacing: .1em; font-size: .78em; color: var(--rubric); white-space: nowrap; }
+.nv-stamp { all: unset; cursor: pointer; font-family: var(--face); font-variant: small-caps; letter-spacing: .12em; font-size: .78rem; line-height: 1.3; padding: .08rem .55rem; min-width: 3.4rem; text-align: center;
+  border: 1px solid currentColor; box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px currentColor; transform: rotate(-3deg); opacity: .85; }
+.nv-stamp:hover, .nv-stamp:focus-visible { opacity: 1; }
+.nv-stamp:focus-visible { outline: 1px dashed var(--rubric); outline-offset: 3px; }
+.nv-stamp.is-open { color: var(--rubric); }
+.nv-stamp.is-closed { color: var(--ink-soft); }
+.nv-stamp.is-cold { color: var(--faint); border-style: dashed; }
+.nv-clue-tools { grid-column: 2 / -1; margin-top: .1rem; font-size: .78rem; font-style: italic; color: var(--ink-soft); }
+.nv-clue-tool { all: unset; cursor: pointer; border-bottom: 1px dotted var(--faint); }
+.nv-clue-tool:hover, .nv-clue-tool:focus-visible { color: var(--rubric); border-bottom-color: var(--rubric); }
+.nv-clue.is-prep { border: 1px dashed rgba(34,27,20,.4); padding: .5rem .6rem; margin-top: .5rem; background: rgba(233,220,192,.35); align-items: center; }
+.nv-clue-meta { display: block; font-size: .78rem; font-style: italic; color: var(--ink-soft); }
+.nv-clue-form { grid-column: 1 / -1; display: grid; gap: .4rem; }
+.nv-clue-form-row { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.nv-clue-form input, .nv-clue-form select, .nv-clue-form textarea { font-family: var(--face); font-size: .9rem; padding: .25rem .45rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); box-sizing: border-box; }
+.nv-clue-form input[type="text"] { flex: 1 1 10rem; min-width: 0; }
+.nv-clue-form textarea { width: 100%; resize: vertical; line-height: 1.4; }
+.nv-prep { margin-top: 2rem; padding-top: .2rem; border-top: 1px solid var(--ink-soft); }
+.nv-prep .nv-clue-ul { margin-bottom: .8rem; }
+/* Appendix B: a fuller account of each major clue */
+.nv-majors { display: grid; gap: 1.6rem; }
+.nv-major { padding-top: 1rem; border-top: 1px solid var(--ink-soft); }
+.nv-major:first-child { padding-top: 0; border-top: 0; }
+.nv-major-h { font-weight: 400; font-size: 1.15rem; line-height: 1.3; margin: 0; display: flex; gap: .7rem; align-items: baseline; }
+.nv-major-h .num { font-variant: small-caps; letter-spacing: .06em; font-size: .85rem; color: var(--rubric); white-space: nowrap; }
+.nv .nv-major-sub { font-style: italic; color: var(--ink-soft); text-indent: 0; margin: .15rem 0 .6rem; font-size: .88em; }
+.nv .nv-major-p { white-space: pre-line; margin: 0 0 .6rem; }
+.nv-major-back { font-variant: small-caps; letter-spacing: .08em; font-size: .8rem; color: var(--ink-soft); }
+.is-flash { animation: nv-flash 1.8s ease-out; }
+@keyframes nv-flash { from { background: rgba(122,36,24,.18); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .is-flash { animation: none; } }
 .nv-tip-host { position: relative; cursor: help; outline: none; }
 .nv-tip-q { font-style: normal; font-variant: normal; font-family: Georgia, serif; font-size: .7em; line-height: 1; letter-spacing: 0; border: 1px solid currentColor; border-radius: 50%; width: 1.35em; height: 1.35em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; padding: 0 0 .06em; margin-left: .3rem; color: var(--rubric); vertical-align: .2em; }
 .nv-tipbox { position: absolute; left: 0; top: calc(100% + .4rem); z-index: 20; width: min(26rem, 80vw); background: #fbf6e8; border: 1px solid var(--ink); box-shadow: 3px 3px 0 rgba(34,27,20,.2);
@@ -396,7 +422,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-tip-host:hover .nv-tipbox, .nv-tip-host:focus .nv-tipbox, .nv-tip-host:focus-within .nv-tipbox { display: block; }
 .nv-clue-add { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; align-items: center; }
 .nv-clue-add[hidden] { display: none; }
-.nv-clue-add input { flex: 1; min-width: 12rem; font-family: var(--face); font-size: .9rem; padding: .25rem .45rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); }
+.nv-clue-add input { flex: 1 1 10rem; min-width: 0; font-family: var(--face); font-size: .9rem; padding: .25rem .45rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); }
 .nv-clue-add select { font-family: var(--face); font-size: .85rem; padding: .2rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); }
 .nv-stock { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: .7rem 0; margin-bottom: 1.4rem; }
 .nv .nv-stock p { text-indent: 0; font-size: .92em; }
@@ -611,7 +637,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 <p data-prose="preface">The papers of the Bookhounds of P. L. Westoby’s, New Bond Street, as they recorded them. The shop deals in manuscripts and printed literature, and its trade has taken its staff into stranger company than a bookseller has any right to expect.</p>
 <p data-prose="preface-2">In Chapter One, Gallery of the One-Eyed God, a telegram from Mr. Westoby called the Bookhounds to the Pimander Club in Piccadilly, where Johnstone Dives engaged them to find a copy of the Caedis Urbi Verae Claves. The search led them from a flat in Kensington to a public house in Spitalfields, and it ended with the ancient book up in flames. Chapter Two, The Shadow on the Throne, is in preparation. It opens in 1936, a year when the whole country is talking about the King.</p>
 <p data-prose="preface-3">A word on the use of this book. Sign the borrower’s register with the name of your Bookhound, and the book will know whose copy it is. Each player may alter only the sheet of their own Bookhound, by pressing “Edit this sheet” at the foot of it. Everyone else may read it. “Return the book” at the top of the page signs you out of your own copy and leaves everyone else’s as it was.</p>
-<p data-prose="preface-4">Any page may be folded by pressing its running head. The Contents lists every page and will take you to it. Plates may be dragged and enlarged, with places visited pinned upon it; hold a pointer over a pin, or touch it, to read of the place. Pressing an ability on a sheet opens a telegram form for a roll, and every throw is entered in Appendix C, where the whole table can see it.</p>
+<p data-prose="preface-4">Any page may be folded by pressing its running head. The Contents lists every page and will take you to it. Plates may be dragged and enlarged, with places visited pinned upon it; hold a pointer over a pin, or touch it, to read of the place. Pressing an ability on a sheet opens a telegram form for a roll, and every throw is entered in Appendix D, where the whole table can see it.</p>
 
 <!-- The Premises: three paragraphs between the photographs -->
 <p data-prose="premises-1">The shop stands on a busy corner of New Bond Street. It is well kept. Books fill every wall up to the high ceilings, wheeled ladders run along the left and right walls, and a gallery at the back looks down over the front of the shop. A coat room opens off the entrance. From it a crawlspace runs through to the shop next door, and it feels longer than it should.</p>
@@ -810,20 +836,44 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
   <div class="nv-body">
     <p class="nv-chapnum">Appendix A</p>
     <h2 class="nv-h2">Notes on the Evidence</h2>
+    <p class="nv-aside">A note marked “Appendix B” has a fuller account there; press its title to read it.</p>
     <div class="nv-clues" data-draw="cluelist" data-source="clues_seed"></div>
     <div class="nv-clue-add" hidden>
       <select class="nv-clue-ch" aria-label="Chapter"><option value="1">Chapter One</option><option value="2" selected>Chapter Two</option></select>
       <input type="text" class="nv-clue-text" maxlength="200" placeholder="A new clue or lead" aria-label="A new clue or lead">
       <button type="button" class="nv-mat-btn nv-clue-btn">Add</button>
     </div>
+    <section class="nv-prep" hidden>
+      <h3 class="nv-clue-ch-h">In Preparation</h3>
+      <p class="nv-aside">For the Keeper’s eyes only. Write clues ahead of time here, with an account for Appendix B if they deserve one. When the players find a clue, reveal it and it joins the notes above.</p>
+      <ol class="nv-clue-ul" data-draw="cluesprep"></ol>
+      <div class="nv-clue-form nv-prep-add">
+        <div class="nv-clue-form-row">
+          <select class="nv-prep-ch" aria-label="Chapter"><option value="1">Chapter One</option><option value="2" selected>Chapter Two</option></select>
+          <input type="text" class="nv-prep-text" maxlength="200" placeholder="A clue to prepare" aria-label="A clue to prepare">
+        </div>
+        <textarea class="nv-prep-detail" rows="4" maxlength="4000" placeholder="Account for Appendix B (optional). Leave it blank if this clue needs no entry of its own. A blank line starts a new paragraph." aria-label="Account for Appendix B"></textarea>
+        <div class="nv-clue-form-row"><button type="button" class="nv-mat-btn nv-prep-btn">Prepare</button></div>
+      </div>
+    </section>
+  </div>
+  <footer class="nv-folio"></footer>
+ </article>
+
+ <article class="nv-page" id="majorclues" data-page="majorclues">
+  <header class="nv-runhead"><span>The London Bookhounds</span><button class="nv-fold" type="button" aria-expanded="true"><span class="nv-fold-t">Appendix B: The Major Clues</span><span class="nv-fold-i" aria-hidden="true"></span></button></header>
+  <div class="nv-body">
+    <p class="nv-chapnum">Appendix B</p>
+    <h2 class="nv-h2">The Major Clues</h2>
+    <div class="nv-majors" data-draw="majorlist"></div>
   </div>
   <footer class="nv-folio"></footer>
  </article>
 
  <article class="nv-page" id="tomes" data-page="tomes">
-  <header class="nv-runhead"><span>The London Bookhounds</span><button class="nv-fold" type="button" aria-expanded="true"><span class="nv-fold-t">Appendix B: Stock &amp; Tomes</span><span class="nv-fold-i" aria-hidden="true"></span></button></header>
+  <header class="nv-runhead"><span>The London Bookhounds</span><button class="nv-fold" type="button" aria-expanded="true"><span class="nv-fold-t">Appendix C: Stock &amp; Tomes</span><span class="nv-fold-i" aria-hidden="true"></span></button></header>
   <div class="nv-body">
-    <p class="nv-chapnum">Appendix B</p>
+    <p class="nv-chapnum">Appendix C</p>
     <h2 class="nv-h2">Stock &amp; Tomes</h2>
     <div class="nv-stock">
       <p class="nv-stock-hd"><span class="nv-tip-host" tabindex="0">Bookshop Stock <i class="nv-tip-q" aria-hidden="true">?</i>
@@ -840,9 +890,9 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
  </article>
 
  <article class="nv-page" id="telegraph" data-page="telegraph">
-  <header class="nv-runhead"><span>The London Bookhounds</span><button class="nv-fold" type="button" aria-expanded="true"><span class="nv-fold-t">Appendix C: The Telegraph Office</span><span class="nv-fold-i" aria-hidden="true"></span></button></header>
+  <header class="nv-runhead"><span>The London Bookhounds</span><button class="nv-fold" type="button" aria-expanded="true"><span class="nv-fold-t">Appendix D: The Telegraph Office</span><span class="nv-fold-i" aria-hidden="true"></span></button></header>
   <div class="nv-body">
-    <p class="nv-chapnum">Appendix C</p>
+    <p class="nv-chapnum">Appendix D</p>
     <h2 class="nv-h2">The Telegraph Office</h2>
     <p class="nv-aside">Every die thrown and point spent, newest first.</p>
     <ol class="nv-log" data-draw="rolllog"></ol>
@@ -918,11 +968,12 @@ const nvDB = nvUse('db');
 const nvUser = nvUse('user');
 // subscribe, and if the platform drops the subscription, quietly subscribe again
 const nvLive = (makeQuery, onData, onGiveUp) => {
-  let tries = 0;
+  let tries = 0, stopped = false, unsub = null;
   const go = () => {
+    if (stopped) return;
     let q;
     try { q = makeQuery(); } catch (e) { if (onGiveUp) onGiveUp(e); return; }
-    q.onSnapshot((snap) => { tries = 0; try { onData(snap); } catch (e) { console.error('[book] could not use an update', e); } },
+    unsub = q.onSnapshot((snap) => { tries = 0; if (stopped) return; try { onData(snap); } catch (e) { console.error('[book] could not use an update', e); } },
       (err) => {
         const code = err && err.code;
         if (['revoked', 'invalid_argument', 'not_granted', 'capability_disabled', 'quota_exceeded'].includes(code)) { if (onGiveUp) onGiveUp(err); return; }
@@ -931,6 +982,7 @@ const nvLive = (makeQuery, onData, onGiveUp) => {
       });
   };
   go();
+  return () => { stopped = true; if (typeof unsub === 'function') { try { unsub(); } catch (e) { /* already closed */ } } };
 };
 // draw a section without letting one bad record blank the whole thing
 const nvSafe = (el, fn, what) => { try { fn(); } catch (e) { console.error('[book] could not draw ' + what, e); el.append(nvEl('p', 'nv-none', `Part of this section could not be drawn (${what}).`)); } };
@@ -1569,7 +1621,7 @@ const nvApplyReader = () => {
   nvRole.keeper = nvIsKeeper(); nvRole.label = nvMe ? nvMe.label : '';
   nvMatGM = nvIsKeeper(); nvClues.gm = nvIsKeeper();
   Object.values(nvMats).forEach((M) => M.sync && M.sync());
-  dash.draw('sheets'); dash.draw('cluelist');
+  dash.draw('sheets'); nvClues.editing = null; nvPrepSync(); nvClueRedraw();
 };
 const nvSignIn = (name, quiet) => {
   const key = String(name || '').trim().toLowerCase().replace(/[\s’']+/g, '-');
@@ -1584,15 +1636,22 @@ const nvSignIn = (name, quiet) => {
   nvApplyReader();
   return true;
 };
+// the earlier borrowers are for flavour only; the names of real readers are never shown here
+const NV_BORROWERS = [
+  ['3 Feb 1936', 'Henry Armitage', true],
+  ['19 Feb 1936', 'Herbert West', true],
+  ['2 Mar 1936', 'Albert N. Wilmarth', false],
+  ['21 Mar 1936', 'Francis W. Thurston', true],
+  ['9 Apr 1936', 'Randolph Carter', false],
+  ['28 Apr 1936', 'Nathaniel W. Peaslee', true]
+];
 dash.draw('register', (el) => {
   el.replaceChildren();
-  const rows = nvReg.list.slice(0, 6).reverse();
-  for (let i = 0; i < 6; i++) {
-    const r = rows[i];
+  NV_BORROWERS.forEach(([d, name, back]) => {
     const li = nvEl('li');
-    li.append(nvEl('span', 'd', r ? nvRegDate(new Date(r.at)) : ''), nvEl('span', 'n', r ? r.name : ''), nvEl('span', 'x', r ? '\u2713' : ''));
+    li.append(nvEl('span', 'd', d), nvEl('span', 'n', name), nvEl('span', 'x', back ? '\u2713' : ''));
     el.append(li);
-  }
+  });
 });
 document.querySelectorAll('.nv-reg').forEach((card) => {
   const input = card.querySelector('.nv-reg-name');
@@ -1611,7 +1670,6 @@ document.querySelectorAll('.nv-return').forEach((b) => b.addEventListener('click
   const db = await nvDB;
   if (db) {
     nvReg.col = db.collection('register');
-    nvLive(() => nvReg.col.orderBy('at', 'desc').limit(12), (snap) => { nvReg.list = snap.docs.map((d) => d.data()); dash.draw('register'); });
     try {
       const user = await nvUser;
       const uid = user ? await user.id() : null;
@@ -1912,9 +1970,74 @@ dash.draw('persons', (el) => {
   });
 });
 
-// clues live in the shared record so they can be added at the table
-const nvClues = { list: [], col: null, gm: false };
+// clues live in the shared record so they can be added at the table.
+// A clue with an account (detail) is a major clue: it also gets an entry in Appendix B, and its note links there.
+// Clues the Keeper is preparing are kept out of that list, in the Keeper's own private space, until they are revealed.
+const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null };
 const NV_STATUS = ['open', 'closed', 'cold'];
+const nvHasDetail = (c) => !nvBlank(c.detail) && String(c.detail).trim() !== '';
+const nvChapterName = (ch) => `Chapter ${nvOrdinal[ch] || ch}`;
+// the № of each clue, counted down the list chapter by chapter
+const nvClueNums = () => {
+  const m = new Map(); let n = 0;
+  [...new Set(nvClues.list.map((c) => Number(c.chapter) || 1))].sort((a, b) => a - b).forEach((ch) => {
+    nvClues.list.filter((c) => (Number(c.chapter) || 1) === ch).forEach((c) => { n += 1; m.set(c.id, n); });
+  });
+  return m;
+};
+const nvClueRedraw = () => {
+  if (nvClues.editing) return;                // never redraw under the Keeper's cursor; finishing the edit redraws
+  dash.draw('cluelist'); dash.draw('majorlist'); dash.draw('cluesprep');
+};
+const nvFlash = (el) => { el.classList.add('is-flash'); setTimeout(() => el.classList.remove('is-flash'), 1800); };
+const nvJump = (elId, soloPage) => {
+  if (NV_SOLO) { window.open(location.pathname + '?page=' + soloPage, '_blank'); return; }
+  const el = document.getElementById(elId); if (!el) return;
+  const page = el.closest('.nv-page');
+  if (page && nvFolded.has(page.dataset.page)) { nvFolded.delete(page.dataset.page); nvSaveFold(); nvApplyFold(page); }
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  nvFlash(el);
+};
+
+// the form used to write or change a clue (the Keeper only)
+const nvClueForm = (init, saveLabel, onSave, onCancel) => {
+  const box = nvEl('div', 'nv-clue-form');
+  const row = nvEl('div', 'nv-clue-form-row');
+  const sel = nvEl('select'); sel.setAttribute('aria-label', 'Chapter');
+  [[1, 'Chapter One'], [2, 'Chapter Two']].forEach(([v, t]) => { const o = nvEl('option', '', t); o.value = String(v); sel.append(o); });
+  sel.value = String(Number(init.chapter) || 1);
+  const text = nvEl('input'); text.type = 'text'; text.maxLength = 200; text.value = init.text || ''; text.setAttribute('aria-label', 'The clue');
+  row.append(sel, text);
+  const detail = nvEl('textarea'); detail.rows = 5; detail.maxLength = 4000; detail.value = init.detail || '';
+  detail.placeholder = 'Account for Appendix B (optional). Leave it blank if this clue needs no entry of its own. A blank line starts a new paragraph.';
+  detail.setAttribute('aria-label', 'Account for Appendix B');
+  const btns = nvEl('div', 'nv-clue-form-row');
+  const save = nvEl('button', 'nv-mat-btn', saveLabel); save.type = 'button';
+  const cancel = nvEl('button', 'nv-mat-btn', 'Cancel'); cancel.type = 'button';
+  save.addEventListener('click', () => {
+    const t = text.value.trim(); if (!t) { text.focus(); return; }
+    onSave({ text: t, chapter: Number(sel.value) || 1, detail: detail.value.trim() });
+  });
+  cancel.addEventListener('click', onCancel);
+  btns.append(save, cancel);
+  box.append(row, detail, btns);
+  return box;
+};
+const nvClueEdit = (li, c, col) => {
+  nvClues.editing = c.id;
+  const done = () => { nvClues.editing = null; nvClueRedraw(); };
+  li.replaceChildren(nvClueForm(c, 'Save', (v) => { col.doc(c.id).update(v).then(done).catch(() => {}); }, done));
+};
+const nvClueTools = (c, col, onRemove) => {
+  const t = nvEl('span', 'nv-clue-tools');
+  const edit = nvEl('button', 'nv-clue-tool', 'edit'); edit.type = 'button';
+  const rm = nvEl('button', 'nv-clue-tool', 'remove'); rm.type = 'button';
+  edit.addEventListener('click', () => nvClueEdit(edit.closest('li'), c, col));
+  rm.addEventListener('click', onRemove);
+  t.append(edit, nvEl('span', '', ' · '), rm);
+  return t;
+};
+
 dash.draw('cluelist', (el) => {
   el.replaceChildren();
   if (!nvClues.list.length && !nvClues.live) { const d = dash.data('clues_seed'); if (d.status === 'ok') nvClues.list = d.data.slice(); }
@@ -1922,16 +2045,22 @@ dash.draw('cluelist', (el) => {
   nvSafe(el, () => nvDrawClues(el), 'the clues');
 });
 const nvDrawClues = (el) => {
+  const nums = nvClueNums();
   const chs = [...new Set(nvClues.list.map((c) => Number(c.chapter) || 1))].sort((a, b) => a - b);
-  let n = 0;
   chs.forEach((ch) => {
-    el.append(nvEl('h3', 'nv-clue-ch-h', `Chapter ${nvOrdinal[ch] || ch}: ${nvSeasonName(ch)}`));
+    el.append(nvEl('h3', 'nv-clue-ch-h', `${nvChapterName(ch)}: ${nvSeasonName(ch)}`));
     const ul = nvEl('ol', 'nv-clue-ul');
     nvClues.list.filter((c) => (Number(c.chapter) || 1) === ch).forEach((c) => {
-      n += 1;
       const st = NV_STATUS.includes(c.status) ? c.status : 'open';
-      const li = nvEl('li', 'nv-card is-' + st);
-      li.append(nvEl('span', 'num', '№ ' + n), nvEl('span', 'txt', c.text));
+      const li = nvEl('li', 'nv-clue is-' + st);
+      li.id = 'clue-row-' + c.id;
+      const txt = nvEl('span', 'txt');
+      if (nvHasDetail(c)) {
+        const a = nvEl('button', 'nv-clue-link', c.text); a.type = 'button';
+        a.addEventListener('click', () => nvJump('major-' + c.id, 'majorclues'));
+        txt.append(a, nvEl('span', 'nv-clue-ref', 'Appendix B'));
+      } else txt.textContent = c.text;
+      li.append(nvEl('span', 'num', '№ ' + nums.get(c.id)), txt);
       const stamp = nvEl('button', 'nv-stamp is-' + st, st); stamp.type = 'button';
       stamp.title = 'Click to change: open, closed, cold';
       stamp.addEventListener('click', () => {
@@ -1939,23 +2068,89 @@ const nvDrawClues = (el) => {
         if (nvClues.col) nvClues.col.doc(c.id).update({ status: next }).catch(() => {});
       });
       li.append(stamp);
-      if (nvClues.gm) {
-        const x = nvEl('button', 'nv-clue-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Remove this clue');
-        x.addEventListener('click', () => nvClues.col && nvClues.col.doc(c.id).delete().catch(() => {}));
-        li.append(x);
+      if (nvClues.gm && nvClues.col) {
+        li.append(nvClueTools(c, nvClues.col, () => {
+          if (nvHasDetail(c) && !window.confirm('Remove this clue and its entry in Appendix B?')) return;
+          nvClues.col.doc(c.id).delete().catch(() => {});
+        }));
       }
       ul.append(li);
     });
     el.append(ul);
   });
 };
+
+// Appendix B: an entry for each clue that has an account
+dash.draw('majorlist', (el) => {
+  el.replaceChildren();
+  const majors = nvClues.list.filter(nvHasDetail);
+  if (!majors.length) { el.append(nvEl('p', 'nv-none', 'No clue has been given a fuller account yet.')); return; }
+  nvSafe(el, () => {
+    const nums = nvClueNums();
+    majors.forEach((c) => {
+      const s = nvEl('section', 'nv-major');
+      s.id = 'major-' + c.id;
+      const h = nvEl('h3', 'nv-major-h');
+      h.append(nvEl('span', 'num', '№ ' + nums.get(c.id)), nvEl('span', 't', c.text));
+      s.append(h, nvEl('p', 'nv-major-sub', nvChapterName(Number(c.chapter) || 1)));
+      String(c.detail).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => s.append(nvEl('p', 'nv-major-p', p)));
+      const back = nvEl('button', 'nv-clue-link nv-major-back', 'Back to the notes'); back.type = 'button';
+      back.addEventListener('click', () => nvJump('clue-row-' + c.id, 'evidence'));
+      s.append(back);
+      el.append(s);
+    });
+  }, 'the major clues');
+});
+
+// clues in preparation: drawn only for the Keeper
+dash.draw('cluesprep', (el) => {
+  el.replaceChildren();
+  if (!nvIsKeeper()) return;
+  if (!nvClues.prep.length) { el.append(nvEl('li', 'nv-none', 'Nothing is prepared yet.')); return; }
+  nvSafe(el, () => nvClues.prep.forEach((c) => {
+    const li = nvEl('li', 'nv-clue is-prep');
+    const txt = nvEl('span', 'txt', c.text);
+    txt.append(nvEl('span', 'nv-clue-meta', nvChapterName(Number(c.chapter) || 1) + (nvHasDetail(c) ? ' · has an entry for Appendix B' : '')));
+    const reveal = nvEl('button', 'nv-mat-btn', 'Reveal'); reveal.type = 'button';
+    reveal.title = 'Add this clue to the notes, where the players can see it';
+    reveal.addEventListener('click', () => {
+      if (!nvClues.col || !nvClues.prepCol) return;
+      reveal.disabled = true;
+      nvClues.col.add({ text: c.text, chapter: Number(c.chapter) || 1, order: Date.now(), status: 'open', detail: c.detail || '' })
+        .then(() => nvClues.prepCol.doc(c.id).delete()).catch(() => { reveal.disabled = false; });
+    });
+    li.append(nvEl('span', 'num', 'Draft'), txt, reveal);
+    li.append(nvClueTools(c, nvClues.prepCol, () => {
+      if (!window.confirm('Delete this prepared clue?')) return;
+      nvClues.prepCol.doc(c.id).delete().catch(() => {});
+    }));
+    el.append(li);
+  }), 'the prepared clues');
+});
+// the Keeper's drafts are fetched only while a Keeper is signed in, and dropped when they sign out
+const nvPrepSync = () => {
+  const gm = nvIsKeeper() && !!nvClues.prepCol;
+  document.querySelectorAll('.nv-prep').forEach((s) => { s.hidden = !gm; });
+  if (gm && !nvClues.prepStop) {
+    nvClues.prepStop = nvLive(() => nvClues.prepCol.orderBy('order'),
+      (snap) => { nvClues.prep = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.kind === 'prepared-clue'); nvClueRedraw(); },
+      () => { nvClues.prepStop = null; nvClues.prepCol = null; nvPrepSync(); });
+  } else if (!nvIsKeeper() && nvClues.prepStop) {
+    nvClues.prepStop(); nvClues.prepStop = null; nvClues.prep = [];
+  }
+  dash.draw('cluesprep');
+};
 (async () => {
   const db = await nvDB;
   if (!db) return;
   nvClues.gm = nvIsKeeper();
   nvClues.col = db.collection('clues');
-  nvLive(() => nvClues.col.orderBy('order'), (snap) => { nvClues.list = snap.docs.map((d) => ({ id: d.id, ...d.data() })); nvClues.live = true; dash.draw('cluelist'); },
-    () => { nvClues.col = null; dash.draw('cluelist'); });
+  nvLive(() => nvClues.col.orderBy('order'), (snap) => { nvClues.list = snap.docs.map((d) => ({ id: d.id, ...d.data() })); nvClues.live = true; nvClueRedraw(); },
+    () => { nvClues.col = null; nvClueRedraw(); });
+  // The Keeper's drafts are kept in this browser's own private space in the shared record (the same place that remembers
+  // which pages it has folded), so no other reader's copy ever fetches them, even one signed in as the Keeper.
+  try { const user = await nvUser; const uid = user ? await user.id() : null; nvClues.prepCol = uid ? db.collection('data/users/' + uid) : null; } catch (e) { nvClues.prepCol = null; }
+  nvPrepSync();
   document.querySelectorAll('.nv-clue-add').forEach((box) => {
     box.hidden = false;
     const input = box.querySelector('.nv-clue-text'), sel = box.querySelector('.nv-clue-ch');
@@ -1966,6 +2161,17 @@ const nvDrawClues = (el) => {
     };
     box.querySelector('.nv-clue-btn').addEventListener('click', add);
     input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); add(); } });
+  });
+  document.querySelectorAll('.nv-prep-add').forEach((box) => {
+    const sel = box.querySelector('.nv-prep-ch'), text = box.querySelector('.nv-prep-text'), detail = box.querySelector('.nv-prep-detail');
+    const add = () => {
+      if (!nvIsKeeper() || !nvClues.prepCol) return;
+      const t = String(text.value || '').trim(); if (!t) { text.focus(); return; }
+      nvClues.prepCol.add({ kind: 'prepared-clue', text: t, chapter: Number(sel.value) || 1, detail: String(detail.value || '').trim(), order: Date.now() }).catch(() => {});
+      text.value = ''; detail.value = ''; text.focus();
+    };
+    box.querySelector('.nv-prep-btn').addEventListener('click', add);
+    text.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); add(); } });
   });
 })();
 
