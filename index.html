@@ -483,6 +483,8 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-prep-import { margin: .2rem 0 .9rem; }
 .nv-import-drop { margin: .6rem 0 .3rem; padding: 1rem .8rem; border: 1px dashed rgba(34,27,20,.5); background: rgba(233,220,192,.3); text-align: center; transition: background .15s, border-color .15s; }
 .nv-import-drop p { margin: 0; text-indent: 0; }
+.nv-import-where { margin: .6rem 0 0; text-indent: 0; font-size: .9rem; }
+.nv-import-where select { font-family: var(--face); font-size: .9rem; padding: .15rem .3rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); }
 .nv-import-drop.is-over { background: rgba(122,36,24,.12); border-color: var(--rubric); }
 .nv-import-paste { margin-top: .6rem; }
 .nv-import-paste > summary { cursor: pointer; font-size: .85rem; color: var(--ink-soft); font-style: italic; }
@@ -934,6 +936,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
       <ol class="nv-clue-ul" data-draw="cluesprep"></ol>
       <details class="nv-prep-import" open>
         <summary>Import clues</summary>
+        <p class="nv-import-where">Put the clues in <select class="nv-import-ch" aria-label="Chapter for the imported clues"><option value="0">the chapter written in each file</option><option value="1">Chapter One</option><option value="2">Chapter Two</option></select></p>
         <div class="nv-import-drop" tabindex="0">
           <p>Drop clue files here, or <button type="button" class="nv-mat-btn nv-import-pick">Choose files…</button></p>
           <input type="file" class="nv-import-file" accept=".json,application/json" multiple hidden>
@@ -2782,7 +2785,7 @@ const nvPrepSync = () => {
     input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); add(); } });
   });
   // import: check every clue first, and add them only if all are sound
-  const nvImportParse = (text) => {
+  const nvImportParse = (text, forceCh) => {
     let data; try { data = JSON.parse(text); } catch (e) { throw new Error('That is not valid JSON (' + e.message + ').'); }
     if (!Array.isArray(data)) data = [data];
     if (!data.length) throw new Error('There is nothing to import.');
@@ -2791,7 +2794,7 @@ const nvPrepSync = () => {
       const at = 'Clue ' + (i + 1) + ': ';
       if (!c || typeof c !== 'object') throw new Error(at + 'is not an object.');
       const t = nvStr(c.text, 200); if (!t) throw new Error(at + 'needs some "text".');
-      const ch = Math.round(nvNum(c.chapter, 1, 9, 1));
+      const ch = forceCh || Math.round(nvNum(c.chapter, 1, 9, 1));   // the chapter chosen in the import box wins over the file
       const doc = { kind: 'prepared-clue', text: t, chapter: ch, detail: nvStr(c.detail, 4000), order: Date.now() + i };
       const kp = nvStr(c.keeper, 4000); if (kp) doc.keeper = kp;   // Keeper's notes are kept only when they are given
       if (c.card) { try { doc.card = nvCardClean(c.card); } catch (e) { throw new Error(at + e.message); } }
@@ -2803,7 +2806,7 @@ const nvPrepSync = () => {
     const ta = box.querySelector('.nv-import-text'), msg = box.querySelector('.nv-import-msg');
     // read one text as a list of clues and add them all to the queue; throws a sentence saying what is wrong
     const importText = async (text) => {
-      const docs = nvImportParse(text);
+      const docs = nvImportParse(text, Number(box.querySelector('.nv-import-ch').value) || 0);
       let done = 0;
       try { for (const d of docs) { await nvClues.prepCol.add(d); done += 1; } } catch (e) { throw new Error('added ' + done + ' of ' + docs.length + ', then the shared record refused one.'); }
       return done;
