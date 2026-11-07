@@ -481,10 +481,17 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 @media (prefers-reduced-motion: reduce) { .tc-inner { transition-duration: .01s; } .tcard { transition: none; } .tc-ring, .tc-panel.is-shaking, .tc-img.is-flicker { animation: none; } .tc-ring.is-glow { opacity: .8; } }
 /* the Keeper's import box */
 .nv-prep-import { margin: .2rem 0 .9rem; }
+.nv-import-drop { margin: .6rem 0 .3rem; padding: 1rem .8rem; border: 1px dashed rgba(34,27,20,.5); background: rgba(233,220,192,.3); text-align: center; transition: background .15s, border-color .15s; }
+.nv-import-drop p { margin: 0; text-indent: 0; }
+.nv-import-drop.is-over { background: rgba(122,36,24,.12); border-color: var(--rubric); }
+.nv-import-paste { margin-top: .6rem; }
+.nv-import-paste > summary { cursor: pointer; font-size: .85rem; color: var(--ink-soft); font-style: italic; }
+.nv-import-paste > summary:hover { color: var(--rubric); }
 .nv-prep-import > summary { cursor: pointer; font-variant: small-caps; letter-spacing: .1em; font-size: .85rem; color: var(--ink-soft); }
 .nv-prep-import > summary:hover { color: var(--rubric); }
 .nv-prep-import textarea { width: 100%; margin: .5rem 0; font-family: "Courier New", Courier, monospace; font-size: .75rem; line-height: 1.35; padding: .35rem .45rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); box-sizing: border-box; resize: vertical; }
-.nv-import-msg { font-style: italic; font-size: .85rem; color: var(--rubric); }
+.nv-import-msg { margin: .2rem 0 0; text-indent: 0; font-style: italic; font-size: .85rem; color: var(--rubric); white-space: pre-line; }
+.nv-import-msg:empty { display: none; }
 .nv-clue-preview { grid-column: 1 / -1; }
 .nv-keeper-notes { margin: 1rem 0 .6rem; padding: .55rem .8rem; border: 1px dashed rgba(34,27,20,.45); background: rgba(233,220,192,.35); font-size: .92em; }
 .nv-keeper-notes > summary { cursor: pointer; font-variant: small-caps; letter-spacing: .12em; color: var(--rubric); font-size: .88rem; }
@@ -925,11 +932,18 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
       <h3 class="nv-clue-ch-h">In Preparation</h3>
       <p class="nv-aside">For the Keeper’s eyes only. Clues prepared ahead of time wait here. When the players find one, reveal it and it joins the notes above.</p>
       <ol class="nv-clue-ul" data-draw="cluesprep"></ol>
-      <details class="nv-prep-import">
+      <details class="nv-prep-import" open>
         <summary>Import clues</summary>
-        <p class="nv-aside">Paste a list of clues in the agreed format. Each one is added to the queue above, with its picture and hidden spots if it has them.</p>
-        <textarea class="nv-import-text" rows="7" spellcheck="false" aria-label="Clues to import, as JSON"></textarea>
-        <div class="nv-clue-form-row"><button type="button" class="nv-mat-btn nv-import-btn">Import</button><button type="button" class="nv-mat-btn nv-import-ex">Load an example</button><span class="nv-import-msg" aria-live="polite"></span></div>
+        <div class="nv-import-drop" tabindex="0">
+          <p>Drop clue files here, or <button type="button" class="nv-mat-btn nv-import-pick">Choose files…</button></p>
+          <input type="file" class="nv-import-file" accept=".json,application/json" multiple hidden>
+        </div>
+        <p class="nv-import-msg" aria-live="polite"></p>
+        <details class="nv-import-paste">
+          <summary>Or paste the text instead</summary>
+          <textarea class="nv-import-text" rows="7" spellcheck="false" aria-label="Clues to import, as JSON"></textarea>
+          <div class="nv-clue-form-row"><button type="button" class="nv-mat-btn nv-import-btn">Import</button><button type="button" class="nv-mat-btn nv-import-ex">Load an example</button></div>
+        </details>
       </details>
     </section>
   </div>
@@ -2787,14 +2801,35 @@ const nvPrepSync = () => {
   };
   document.querySelectorAll('.nv-prep-import').forEach((box) => {
     const ta = box.querySelector('.nv-import-text'), msg = box.querySelector('.nv-import-msg');
-    box.querySelector('.nv-import-btn').addEventListener('click', async () => {
-      msg.textContent = '';
-      if (!nvIsKeeper() || !nvClues.prepCol) { msg.textContent = 'Sign in as the Keeper first.'; return; }
-      let docs; try { docs = nvImportParse(ta.value); } catch (e) { msg.textContent = e.message; return; }
+    // read one text as a list of clues and add them all to the queue; throws a sentence saying what is wrong
+    const importText = async (text) => {
+      const docs = nvImportParse(text);
       let done = 0;
-      try { for (const d of docs) { await nvClues.prepCol.add(d); done += 1; } } catch (e) { msg.textContent = 'Added ' + done + ' of ' + docs.length + '; then the shared record refused one.'; return; }
-      ta.value = ''; msg.textContent = 'Added ' + done + (done === 1 ? ' clue' : ' clues') + ' to the queue.';
+      try { for (const d of docs) { await nvClues.prepCol.add(d); done += 1; } } catch (e) { throw new Error('added ' + done + ' of ' + docs.length + ', then the shared record refused one.'); }
+      return done;
+    };
+    const ready = () => { if (nvIsKeeper() && nvClues.prepCol) return true; msg.textContent = 'Sign in as the Keeper first.'; return false; };
+    const plural = (n) => n + (n === 1 ? ' clue' : ' clues');
+    box.querySelector('.nv-import-btn').addEventListener('click', async () => {
+      msg.textContent = ''; if (!ready()) return;
+      try { const n = await importText(ta.value); ta.value = ''; msg.textContent = 'Added ' + plural(n) + ' to the queue.'; } catch (e) { msg.textContent = e.message; }
     });
+    // files: chosen from the computer, or dropped on the box. Each file is checked whole and added only if every clue in it is sound.
+    const takeFiles = async (files) => {
+      msg.textContent = ''; if (!ready()) return;
+      const lines = []; let total = 0;
+      for (const f of [...files]) {
+        if (f.size > 2e6) { lines.push(f.name + ': too large.'); continue; }
+        try { const n = await importText(await f.text()); total += n; lines.push(f.name + ': ' + plural(n) + ' added.'); } catch (e) { lines.push(f.name + ': ' + e.message); }
+      }
+      msg.textContent = lines.join('\n') + (total ? '\nThey are in the queue above.' : '');
+    };
+    const pick = box.querySelector('.nv-import-file'), drop = box.querySelector('.nv-import-drop');
+    box.querySelector('.nv-import-pick').addEventListener('click', () => pick.click());
+    pick.addEventListener('change', () => { const fs = [...pick.files]; pick.value = ''; if (fs.length) takeFiles(fs); });
+    ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+    ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('is-over'); }));
+    drop.addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files.length) takeFiles(e.dataTransfer.files); });
     box.querySelector('.nv-import-ex').addEventListener('click', () => {
       fetch('data/clue_example.json').then((r) => r.text()).then((t) => { ta.value = t; msg.textContent = ''; }).catch(() => { msg.textContent = 'The example could not be loaded.'; });
     });
