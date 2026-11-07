@@ -449,6 +449,7 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .tc-img.is-flicker { animation: tc-flicker 1.6s steps(1, end); }
 @keyframes tc-flicker { 0%, 100% { opacity: 1; } 8% { opacity: .15; } 14% { opacity: 1; } 30% { opacity: .3; } 36% { opacity: 1; } 55% { opacity: .1; } 62% { opacity: .9; } 80% { opacity: .4; } 88% { opacity: 1; } }
 .tc-cap { position: relative; display: flex; align-items: center; min-height: 2.6rem; padding-right: 2.6rem; font-variant: small-caps; letter-spacing: .1em; font-size: .78rem; line-height: 1.25; color: var(--ink-soft); }
+.tc-cap.no-ear { padding-right: 0; }
 .tc-cap b { font-weight: 400; color: var(--rubric); margin-right: .5rem; white-space: nowrap; }
 .tc-ear { all: unset; position: absolute; right: 0; bottom: 0; width: 2.5rem; height: 2.5rem; cursor: pointer; z-index: 5;
   background: linear-gradient(315deg, transparent 50%, #d8c9a6 50%, #efe4c8 100%); box-shadow: -2px -2px 3px rgba(34,27,20,.25); }
@@ -471,6 +472,9 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .nv-prep-import textarea { width: 100%; margin: .5rem 0; font-family: "Courier New", Courier, monospace; font-size: .75rem; line-height: 1.35; padding: .35rem .45rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); box-sizing: border-box; resize: vertical; }
 .nv-import-msg { font-style: italic; font-size: .85rem; color: var(--rubric); }
 .nv-clue-preview { grid-column: 1 / -1; }
+.nv-keeper-notes { margin: 1rem 0 .6rem; padding: .55rem .8rem; border: 1px dashed rgba(34,27,20,.45); background: rgba(233,220,192,.35); font-size: .92em; }
+.nv-keeper-notes > summary { cursor: pointer; font-variant: small-caps; letter-spacing: .12em; color: var(--rubric); font-size: .88rem; }
+.nv-keeper-notes p { margin: .5rem 0 0; text-indent: 0; white-space: pre-line; }
 .nv-tip-host { position: relative; cursor: help; outline: none; }
 .nv-tip-q { font-style: normal; font-variant: normal; font-family: Georgia, serif; font-size: .7em; line-height: 1; letter-spacing: 0; border: 1px solid currentColor; border-radius: 50%; width: 1.35em; height: 1.35em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; padding: 0 0 .06em; margin-left: .3rem; color: var(--rubric); vertical-align: .2em; }
 .nv-tipbox { position: absolute; left: 0; top: calc(100% + .4rem); z-index: 20; width: min(26rem, 80vw); background: #fbf6e8; border: 1px solid var(--ink); box-shadow: 3px 3px 0 rgba(34,27,20,.2);
@@ -2075,8 +2079,8 @@ const nvCardClean = (raw) => {
     const fx = [...new Set([].concat((s && s.effect) || []).filter((e) => NV_FX.includes(e)))];
     // on a picture a spot is a place in percent; on a model it is a place in the model's own space (the longest side spans -1 to 1)
     const spot = model
-      ? { at: (Array.isArray(s && s.at) && s.at.length === 3 ? s.at : [0, -1, 0]).map((n) => nvNum(n, -1.5, 1.5, 0)), r: nvNum(s && s.r, 0.02, 0.6, 0.12), effect: fx, text: nvStr(s && s.text, 1500), taps: Math.round(nvNum(s && s.taps, 1, 10, 1)) }
-      : { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 1500), taps: Math.round(nvNum(s && s.taps, 1, 10, 1)) };
+      ? { at: (Array.isArray(s && s.at) && s.at.length === 3 ? s.at : [0, -1, 0]).map((n) => nvNum(n, -1.5, 1.5, 0)), r: nvNum(s && s.r, 0.02, 0.6, 0.12), effect: fx, text: nvStr(s && s.text, 1500), taps: Math.round(nvNum(s && s.taps, 1, 10, 1)), within: nvNum(s && s.within, 0.5, 10, 2) }
+      : { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 1500), taps: Math.round(nvNum(s && s.taps, 1, 10, 1)), within: nvNum(s && s.within, 0.5, 10, 2) };
     if (fx.includes('image')) {
       if (!nvAssetOk(s.image)) throw new Error('card.spots[' + i + '].image must be a data:image URL or a file in assets/');
       spot.image = s.image;
@@ -2278,7 +2282,7 @@ const nvModelView = (panel, model, onTap) => {
 
 const nvCardEl = (card, ctx) => {
   const veil = card.veil || null;
-  const st = { cleared: !(veil && veil.type === 'scratch'), rubbed: false, painted: false, fired: new Set(), taps: {}, x: 0, y: 0, rot: -1, hold: null };
+  const st = { cleared: !(veil && veil.type === 'scratch'), rubbed: false, painted: false, fired: new Set(), taps: {}, last: {}, x: 0, y: 0, rot: -1, hold: null };
   const wrap = nvEl('div', 'tcard-wrap');
   const cardEl = nvEl('div', 'tcard');
   cardEl.style.transform = 'rotate(-1deg)';
@@ -2301,14 +2305,19 @@ const nvCardEl = (card, ctx) => {
     });
     whisper.classList.add('is-on');
   };
-  // a spot may need several taps before it answers; the early ones give only the smallest buzz, and no sign
+  // a spot may need several taps before it answers. Every one must land on the spot, each within a couple of seconds of the one
+  // before; a tap elsewhere, or a pause that is too long, starts the count again. The early taps give only the smallest buzz, and no sign.
   const press = (i, s, tap) => {
     if (st.fired.has(i)) return;
-    st.taps[i] = (st.taps[i] || 0) + 1;
+    const now = performance.now();
+    if (st.taps[i] && now - st.last[i] > (s.within || 2) * 1000) st.taps[i] = 0;
+    st.taps[i] = (st.taps[i] || 0) + 1; st.last[i] = now;
     if (st.taps[i] < (s.taps || 1)) { nvBuzz(8); return; }
     st.fired.add(i); fire(s, tap);
   };
-  const turn = () => { cardEl.classList.toggle('is-flipped'); nvBuzz(12); };
+  const missed = () => { st.taps = {}; };
+  const hasBack = !!(card.back && card.back.text);   // a card is turned over only if there is something written on the back
+  const turn = () => { if (hasBack) { cardEl.classList.toggle('is-flipped'); nvBuzz(12); } };
   const ear = (label) => { const b = nvEl('button', 'tc-ear'); b.type = 'button'; b.setAttribute('aria-label', label); b.dataset.nodrag = '1'; b.addEventListener('click', turn); return b; };
 
   // hidden spots: invisible, and they answer only to a click or touch in the right place
@@ -2333,11 +2342,12 @@ const nvCardEl = (card, ctx) => {
   if (card.model) {
     panel.classList.add('is-model'); panel.dataset.nodrag = '1';
     mv = nvModelView(panel, card.model, (p, sx, sy) => {
-      if (!p) return;
+      let landed = false;
       (card.spots || []).forEach((s, i) => {
-        if (Math.hypot(p[0] - s.at[0], p[1] - s.at[1], p[2] - s.at[2]) > s.r) return;
-        press(i, s, { x: sx, y: sy });
+        if (!p || Math.hypot(p[0] - s.at[0], p[1] - s.at[1], p[2] - s.at[2]) > s.r) return;
+        landed = true; press(i, s, { x: sx, y: sy });
       });
+      if (!landed) missed();
     });
     pic = mv.canvas; panel.append(mv.canvas); wrap._mv = mv;
     wrap.showSpots = () => { if (card.spots && card.spots[0]) mv.found(card.spots[0], false); };   // for the Keeper's preview
@@ -2345,9 +2355,10 @@ const nvCardEl = (card, ctx) => {
   (card.model ? [] : (card.spots || [])).forEach((s, i) => {
     const b = nvEl('button', 'tc-spot'); b.type = 'button'; b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); b.dataset.nodrag = '1';
     b.style.left = s.x + '%'; b.style.top = s.y + '%'; b.style.setProperty('--r', String(s.r));
-    b.addEventListener('click', () => press(i, s));
+    b.addEventListener('click', (e) => { e.stopPropagation(); press(i, s); });
     panel.append(b);
   });
+  if (!card.model) panel.addEventListener('click', missed);   // a tap on the picture but not on a spot breaks the run
 
   // a layer of grime (or frost, ink, dust) to rub away
   let cv = null, cx = null, rub = null;
@@ -2434,9 +2445,13 @@ const nvCardEl = (card, ctx) => {
 
   const cap = nvEl('div', 'tc-cap');
   cap.append(nvEl('b', '', ctx.label || ''), document.createTextNode(card.front.caption || ctx.text || ''));
-  front.append(grip, panel, cap, ear('Turn the card over'));
-  back.append(nvEl('p', 'tc-no', (ctx.label ? ctx.label + ' · ' : '') + (ctx.chapter || '')), nvEl('p', 'tc-bt', (card.back && card.back.text) || ctx.text || ''), ear('Turn the card back over'));
-  inner.append(front, back); cardEl.append(inner);
+  front.append(grip, panel, cap);
+  if (hasBack) {
+    front.append(ear('Turn the card over'));
+    back.append(nvEl('p', 'tc-no', (ctx.label ? ctx.label + ' · ' : '') + (ctx.chapter || '')), nvEl('p', 'tc-bt', card.back.text), ear('Turn the card back over'));
+    inner.append(front, back);
+  } else { cap.classList.add('no-ear'); inner.append(front); }
+  cardEl.append(inner);
   wrap.append(cardEl, whisper);
   return wrap;
 };
@@ -2456,7 +2471,7 @@ const nvCardGet = (c, label) => {
 // clues live in the shared record so they can be added at the table.
 // A clue with an account (detail) is a major clue: it also gets an entry in Appendix B, and its note links there.
 // Clues the Keeper is preparing are kept out of that list, in the Keeper's own private space, until they are revealed.
-const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null, previews: new Set() };
+const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null, previews: new Set(), notes: {} };
 const NV_STATUS = ['open', 'closed', 'cold'];
 const nvHasDetail = (c) => !nvBlank(c.detail) && String(c.detail).trim() !== '';
 const nvMajor = (c) => nvHasDetail(c) || !!c.card;   // a clue with an account, or a card, has its own entry in Appendix B
@@ -2555,6 +2570,7 @@ const nvDrawClues = (el) => {
       if (nvClues.gm && nvClues.col) {
         li.append(nvClueTools(c, nvClues.col, () => {
           if (nvMajor(c) && !window.confirm('Remove this clue and its entry in Appendix B?')) return;
+          if (nvClues.prepCol && nvClues.notes[c.id] !== undefined) nvClues.prepCol.doc('notes-' + c.id).delete().catch(() => {});
           nvClues.col.doc(c.id).delete().catch(() => {});
         }));
       }
@@ -2564,6 +2580,13 @@ const nvDrawClues = (el) => {
   });
 };
 
+// the Keeper's notes on a clue: written only when asked for, and drawn only for the Keeper
+const nvKeeperNotes = (text, open) => {
+  const d = nvEl('details', 'nv-keeper-notes'); d.open = !!open;
+  d.append(nvEl('summary', '', 'Keeper’s notes'));
+  String(text).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => d.append(nvEl('p', '', p)));
+  return d;
+};
 // Appendix B: an entry for each clue that has an account
 dash.draw('majorlist', (el) => {
   el.replaceChildren();
@@ -2579,6 +2602,7 @@ dash.draw('majorlist', (el) => {
       s.append(h, nvEl('p', 'nv-major-sub', nvChapterName(Number(c.chapter) || 1)));
       if (c.card) s.append(nvCardGet(c, '№ ' + nums.get(c.id)));
       if (nvHasDetail(c)) String(c.detail).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => s.append(nvEl('p', 'nv-major-p', p)));
+      if (nvIsKeeper() && nvClues.notes[c.id]) s.append(nvKeeperNotes(nvClues.notes[c.id], true));
       const back = nvEl('button', 'nv-clue-link nv-major-back', 'Back to the notes'); back.type = 'button';
       back.addEventListener('click', () => nvJump('clue-row-' + c.id, 'evidence'));
       s.append(back);
@@ -2603,7 +2627,11 @@ dash.draw('cluesprep', (el) => {
       reveal.disabled = true;
       const live = { text: c.text, chapter: Number(c.chapter) || 1, order: Date.now(), status: 'open', detail: c.detail || '' };
       if (c.card) live.card = c.card;
-      nvClues.col.add(live).then(() => nvClues.prepCol.doc(c.id).delete()).catch(() => { reveal.disabled = false; });
+      // the Keeper's notes never go into the shared list: they stay in the Keeper's private space, tied to the new clue
+      nvClues.col.add(live).then(async (ref) => {
+        if (c.keeper) { try { await nvClues.prepCol.doc('notes-' + ref.id).set({ kind: 'clue-notes', clueId: ref.id, text: c.keeper, order: Date.now() }); } catch (e) { /* they can be written again */ } }
+        await nvClues.prepCol.doc(c.id).delete();
+      }).catch(() => { reveal.disabled = false; });
     });
     li.append(nvEl('span', 'num', 'Draft'), txt, reveal);
     const tools = nvClueTools(c, nvClues.prepCol, () => {
@@ -2616,6 +2644,7 @@ dash.draw('cluesprep', (el) => {
       tools.append(nvEl('span', '', ' · '), pv);
     }
     li.append(tools);
+    if (c.keeper) { const kn = nvEl('div', 'nv-clue-preview'); kn.append(nvKeeperNotes(c.keeper, false)); li.append(kn); }
     if (c.card && nvClues.previews.has(c.id)) {
       const box = nvEl('div', 'nv-clue-preview');
       try {
@@ -2634,10 +2663,15 @@ const nvPrepSync = () => {
   document.querySelectorAll('.nv-prep').forEach((s) => { s.hidden = !gm; });
   if (gm && !nvClues.prepStop) {
     nvClues.prepStop = nvLive(() => nvClues.prepCol.orderBy('order'),
-      (snap) => { nvClues.prep = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.kind === 'prepared-clue'); nvClueRedraw(); },
+      (snap) => {
+        const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        nvClues.prep = all.filter((c) => c.kind === 'prepared-clue');
+        nvClues.notes = {}; all.filter((c) => c.kind === 'clue-notes' && c.clueId).forEach((n) => { nvClues.notes[n.clueId] = String(n.text || ''); });
+        nvClueRedraw();
+      },
       () => { nvClues.prepStop = null; nvClues.prepCol = null; nvPrepSync(); });
   } else if (!nvIsKeeper() && nvClues.prepStop) {
-    nvClues.prepStop(); nvClues.prepStop = null; nvClues.prep = [];
+    nvClues.prepStop(); nvClues.prepStop = null; nvClues.prep = []; nvClues.notes = {};
   }
   dash.draw('cluesprep');
 };
@@ -2675,6 +2709,7 @@ const nvPrepSync = () => {
       const t = nvStr(c.text, 200); if (!t) throw new Error(at + 'needs some "text".');
       const ch = Math.round(nvNum(c.chapter, 1, 9, 1));
       const doc = { kind: 'prepared-clue', text: t, chapter: ch, detail: nvStr(c.detail, 4000), order: Date.now() + i };
+      const kp = nvStr(c.keeper, 4000); if (kp) doc.keeper = kp;   // Keeper's notes are kept only when they are given
       if (c.card) { try { doc.card = nvCardClean(c.card); } catch (e) { throw new Error(at + e.message); } }
       if (JSON.stringify(doc).length > 950000) throw new Error(at + 'is too large for the shared record (about 1 MB at most).');
       return doc;
