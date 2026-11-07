@@ -411,6 +411,57 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
 .is-flash { animation: nv-flash 1.8s ease-out; }
 @keyframes nv-flash { from { background: rgba(122,36,24,.18); } to { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .is-flash { animation: none; } }
+/* tactile clue cards */
+.tcard-wrap { display: grid; justify-items: center; gap: .6rem; margin: .9rem 0 1.1rem; perspective: 1400px; }
+.tcard { position: relative; width: min(20rem, 100%); user-select: none; -webkit-user-select: none; cursor: grab;
+  transition: transform .5s cubic-bezier(.2, 1.5, .4, 1), filter .3s; filter: drop-shadow(0 5px 4px rgba(34,27,20,.4)); z-index: 1; }
+.tcard.is-held { transition: filter .2s; cursor: grabbing; filter: drop-shadow(0 20px 14px rgba(34,27,20,.45)); z-index: 6; }
+.tc-inner { position: relative; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.3, 1.3, .5, 1); }
+.tcard.is-flipped .tc-inner { transform: rotateY(180deg); }
+.tc-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--paper); border: 1px solid rgba(34,27,20,.55);
+  background-image: linear-gradient(135deg, rgba(255,255,255,.35), transparent 40%), radial-gradient(ellipse at 80% 90%, rgba(122,36,24,.07), transparent 55%); }
+.tc-front { position: relative; padding: 1.15rem 1.15rem 0; }
+.tc-back { position: absolute; inset: 0; transform: rotateY(180deg); padding: 1.3rem 1.2rem; display: grid; align-content: start; gap: .8rem; overflow: hidden; }
+.tc-grip { position: absolute; left: 0; right: 0; top: 0; height: 1.15rem; touch-action: none; }
+.tc-panel { position: relative; aspect-ratio: var(--ar, 1); background: #1d1712; border: 1px solid #0d0b09; overflow: hidden; }
+.tc-panel > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.tc-alt { opacity: 0; transition: opacity 1.4s ease; }
+.tc-alt.is-on { opacity: 1; }
+.tc-veil { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; touch-action: none; cursor: crosshair; transition: opacity .7s ease; }
+.tc-veil.is-clear { opacity: 0; pointer-events: none; }
+.tc-dark { position: absolute; inset: 0; z-index: 4; pointer-events: none; --lx: -999px; --ly: -999px; --lr: 70px;
+  background: radial-gradient(circle at var(--lx) var(--ly), rgba(8,6,4,0) 0, rgba(8,6,4,0) calc(var(--lr) * .5), rgba(8,6,4,.97) var(--lr)); }
+.tc-panel.is-lantern { touch-action: none; cursor: crosshair; }
+.tc-spot { all: unset; position: absolute; z-index: 2; width: calc(var(--r) * 2%); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; }
+.tcard-wrap.show-spots .tc-spot { outline: 1px dashed rgba(255,255,255,.85); background: rgba(122,36,24,.3); }
+.tc-ring { position: absolute; z-index: 2; width: calc(var(--r) * 2%); aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(239,230,207,.9); pointer-events: none;
+  transform: translate(-50%, -50%) scale(.6); animation: tc-ring 1.4s ease-out forwards; }
+.tc-ring.is-glow { border-color: rgba(184,50,31,.9); box-shadow: 0 0 14px rgba(184,50,31,.75), inset 0 0 10px rgba(184,50,31,.5); animation: tc-glow 2.4s ease-in-out infinite; }
+@keyframes tc-ring { from { opacity: .9; transform: translate(-50%, -50%) scale(.6); } to { opacity: 0; transform: translate(-50%, -50%) scale(2.4); } }
+@keyframes tc-glow { 0%, 100% { opacity: .35; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } }
+.tc-panel.is-shaking { animation: tc-shake .6s linear; }
+@keyframes tc-shake { 0%, 100% { transform: none; } 15% { transform: translate(-4px, 2px) rotate(-.6deg); } 30% { transform: translate(4px, -2px) rotate(.6deg); } 45% { transform: translate(-3px, -1px); } 60% { transform: translate(3px, 2px); } 80% { transform: translate(-1px, 1px); } }
+.tc-img.is-flicker { animation: tc-flicker 1.6s steps(1, end); }
+@keyframes tc-flicker { 0%, 100% { opacity: 1; } 8% { opacity: .15; } 14% { opacity: 1; } 30% { opacity: .3; } 36% { opacity: 1; } 55% { opacity: .1; } 62% { opacity: .9; } 80% { opacity: .4; } 88% { opacity: 1; } }
+.tc-cap { position: relative; display: flex; align-items: center; min-height: 2.6rem; padding-right: 2.6rem; font-variant: small-caps; letter-spacing: .1em; font-size: .78rem; line-height: 1.25; color: var(--ink-soft); }
+.tc-cap b { font-weight: 400; color: var(--rubric); margin-right: .5rem; white-space: nowrap; }
+.tc-ear { all: unset; position: absolute; right: 0; bottom: 0; width: 2.5rem; height: 2.5rem; cursor: pointer; z-index: 5;
+  background: linear-gradient(315deg, transparent 50%, #d8c9a6 50%, #efe4c8 100%); box-shadow: -2px -2px 3px rgba(34,27,20,.25); }
+.tc-ear::after { content: "turn"; position: absolute; right: .25rem; bottom: .2rem; font-size: .6rem; font-variant: small-caps; letter-spacing: .1em; color: var(--ink-soft); }
+.tc-ear:hover::after, .tc-ear:focus-visible::after { color: var(--rubric); }
+.tc-ear:focus-visible { outline: 1px dashed var(--rubric); outline-offset: -3px; }
+.tc-back .tc-no { margin: 0; font-variant: small-caps; letter-spacing: .1em; color: var(--rubric); font-size: .85rem; border-bottom: 1px solid rgba(122,36,24,.35); padding-bottom: .3rem; }
+.tc-back .tc-bt { margin: 0; font-style: italic; line-height: 1.5; color: var(--ink); text-indent: 0; }
+.tc-whisper { margin: 0; min-height: 1.4em; font-style: italic; letter-spacing: .05em; color: var(--rubric); opacity: 0; transition: opacity 1.2s; text-align: center; text-indent: 0; }
+.tc-whisper.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .tc-inner { transition-duration: .01s; } .tcard { transition: none; } .tc-ring, .tc-panel.is-shaking, .tc-img.is-flicker { animation: none; } .tc-ring.is-glow { opacity: .8; } }
+/* the Keeper's import box */
+.nv-prep-import { margin: .2rem 0 .9rem; }
+.nv-prep-import > summary { cursor: pointer; font-variant: small-caps; letter-spacing: .1em; font-size: .85rem; color: var(--ink-soft); }
+.nv-prep-import > summary:hover { color: var(--rubric); }
+.nv-prep-import textarea { width: 100%; margin: .5rem 0; font-family: "Courier New", Courier, monospace; font-size: .75rem; line-height: 1.35; padding: .35rem .45rem; border: 1px solid rgba(34,27,20,.6); background: #fffaf0; color: var(--ink); box-sizing: border-box; resize: vertical; }
+.nv-import-msg { font-style: italic; font-size: .85rem; color: var(--rubric); }
+.nv-clue-preview { grid-column: 1 / -1; }
 .nv-tip-host { position: relative; cursor: help; outline: none; }
 .nv-tip-q { font-style: normal; font-variant: normal; font-family: Georgia, serif; font-size: .7em; line-height: 1; letter-spacing: 0; border: 1px solid currentColor; border-radius: 50%; width: 1.35em; height: 1.35em; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; padding: 0 0 .06em; margin-left: .3rem; color: var(--rubric); vertical-align: .2em; }
 .nv-tipbox { position: absolute; left: 0; top: calc(100% + .4rem); z-index: 20; width: min(26rem, 80vw); background: #fbf6e8; border: 1px solid var(--ink); box-shadow: 3px 3px 0 rgba(34,27,20,.2);
@@ -847,6 +898,12 @@ button.nv-gauge2:hover, button.nv-gauge2:focus-visible { background: rgba(122,36
       <h3 class="nv-clue-ch-h">In Preparation</h3>
       <p class="nv-aside">For the Keeper’s eyes only. Write clues ahead of time here, with an account for Appendix B if they deserve one. When the players find a clue, reveal it and it joins the notes above.</p>
       <ol class="nv-clue-ul" data-draw="cluesprep"></ol>
+      <details class="nv-prep-import">
+        <summary>Import clues</summary>
+        <p class="nv-aside">Paste a list of clues in the agreed format. Each one is added to the queue above, with its picture and hidden spots if it has them.</p>
+        <textarea class="nv-import-text" rows="7" spellcheck="false" aria-label="Clues to import, as JSON"></textarea>
+        <div class="nv-clue-form-row"><button type="button" class="nv-mat-btn nv-import-btn">Import</button><button type="button" class="nv-mat-btn nv-import-ex">Load an example</button><span class="nv-import-msg" aria-live="polite"></span></div>
+      </details>
       <div class="nv-clue-form nv-prep-add">
         <div class="nv-clue-form-row">
           <select class="nv-prep-ch" aria-label="Chapter"><option value="1">Chapter One</option><option value="2" selected>Chapter Two</option></select>
@@ -1970,12 +2027,202 @@ dash.draw('persons', (el) => {
   });
 });
 
+// ---------- tactile clue cards ----------
+// A clue may carry a "card": a picture the players can pick up, rub clean, turn over, light up or poke.
+// The format is described in CLAUDE.md. Everything here is plain DOM; nothing from a card is ever used as markup.
+const NV_VEILS = {
+  soot: { base: '#26211c', lo: 28, hi: 62, tint: [6, 0, -6], smudge: '8,6,4' },
+  dust: { base: '#7d6b52', lo: 120, hi: 172, tint: [8, -10, -34], smudge: '60,48,30' },
+  frost: { base: '#cfdde4', lo: 196, hi: 246, tint: [-12, 0, 4], smudge: '255,255,255' },
+  ink: { base: '#141a2a', lo: 18, hi: 58, tint: [-8, -4, 14], smudge: '4,6,18' }
+};
+const NV_FX = ['pulse', 'glow', 'shake', 'flicker', 'image', 'flip'];
+const nvAssetOk = (s) => typeof s === 'string' && s.length <= 650000 &&
+  (/^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,[A-Za-z0-9+\/=]+$/.test(s) || /^assets\/[A-Za-z0-9._-]+$/.test(s));
+const nvNum = (v, lo, hi, d) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
+const nvStr = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+const nvBuzz = (p) => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* not every device can */ } };
+// check a card and return a clean copy, or throw an Error that says what is wrong
+const nvCardClean = (raw) => {
+  if (!raw || typeof raw !== 'object') throw new Error('"card" must be an object');
+  const f = raw.front || {};
+  if (!nvAssetOk(f.image)) throw new Error('card.front.image must be a data:image URL (png, jpeg, webp, gif or svg, under about 650 KB) or a file in assets/');
+  const card = { front: { image: f.image, alt: nvStr(f.alt, 200), caption: nvStr(f.caption, 80), aspect: nvNum(f.aspect, 0.4, 2.5, 1) } };
+  const bt = nvStr(raw.back && raw.back.text, 400);
+  if (bt) card.back = { text: bt };
+  const v = raw.veil;
+  if (v) {
+    if (v.type === 'scratch') card.veil = { type: 'scratch', style: NV_VEILS[v.style] ? v.style : 'soot' };
+    else if (v.type === 'lantern') card.veil = { type: 'lantern', radius: nvNum(v.radius, 8, 60, 22) };
+    else throw new Error('card.veil.type must be "scratch" or "lantern"');
+  }
+  const spots = Array.isArray(raw.spots) ? raw.spots : [];
+  if (spots.length > 8) throw new Error('A card may have at most 8 hidden spots');
+  card.spots = spots.map((s, i) => {
+    const fx = [...new Set([].concat((s && s.effect) || []).filter((e) => NV_FX.includes(e)))];
+    const spot = { x: nvNum(s && s.x, 0, 100, 50), y: nvNum(s && s.y, 0, 100, 50), r: nvNum(s && s.r, 2, 30, 7), effect: fx, text: nvStr(s && s.text, 160) };
+    if (fx.includes('image')) {
+      if (!nvAssetOk(s.image)) throw new Error('card.spots[' + i + '].image must be a data:image URL or a file in assets/');
+      spot.image = s.image;
+    }
+    return spot;
+  });
+  if (JSON.stringify(card).length > 900000) throw new Error('This card is too large (the limit is about 900 KB in all). Use smaller or fewer pictures.');
+  return card;
+};
+
+const nvCardEl = (card, ctx) => {
+  const veil = card.veil || null;
+  const st = { cleared: !(veil && veil.type === 'scratch'), rubbed: false, painted: false, fired: new Set(), x: 0, y: 0, rot: -1, hold: null };
+  const wrap = nvEl('div', 'tcard-wrap');
+  const cardEl = nvEl('div', 'tcard');
+  cardEl.style.transform = 'rotate(-1deg)';
+  const inner = nvEl('div', 'tc-inner');
+  const front = nvEl('div', 'tc-face tc-front'), back = nvEl('div', 'tc-face tc-back');
+  const grip = nvEl('span', 'tc-grip'); grip.setAttribute('aria-hidden', 'true');
+  const panel = nvEl('div', 'tc-panel'); panel.style.setProperty('--ar', String(card.front.aspect));
+  const img = nvEl('img', 'tc-img'); img.src = card.front.image; img.alt = card.front.alt; img.draggable = false;
+  const alt = nvEl('img', 'tc-alt'); alt.alt = ''; alt.draggable = false;
+  panel.append(img, alt);
+  const whisper = nvEl('p', 'tc-whisper'); whisper.setAttribute('aria-live', 'polite');
+  const turn = () => { cardEl.classList.toggle('is-flipped'); nvBuzz(12); };
+  const ear = (label) => { const b = nvEl('button', 'tc-ear'); b.type = 'button'; b.setAttribute('aria-label', label); b.dataset.nodrag = '1'; b.addEventListener('click', turn); return b; };
+
+  // hidden spots: invisible, and they answer only to a click or touch in the right place
+  const ring = (s, keep) => {
+    const r = nvEl('span', 'tc-ring' + (keep ? ' is-glow' : '')); r.style.left = s.x + '%'; r.style.top = s.y + '%'; r.style.setProperty('--r', String(s.r));
+    panel.append(r); if (!keep) setTimeout(() => r.remove(), 1600);
+  };
+  const restart = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+  const fire = (s) => {
+    const fx = s.effect;
+    if (fx.includes('pulse')) ring(s, false);
+    if (fx.includes('glow')) ring(s, true);
+    if (fx.includes('shake')) restart(panel, 'is-shaking');
+    if (fx.includes('flicker')) restart(img, 'is-flicker');
+    if (fx.includes('image') && s.image) { alt.src = s.image; alt.classList.add('is-on'); }
+    if (fx.includes('flip')) setTimeout(turn, 500);
+    if (s.text) { whisper.textContent = s.text; whisper.classList.add('is-on'); }
+    nvBuzz([30, 40, 60]);
+  };
+  (card.spots || []).forEach((s, i) => {
+    const b = nvEl('button', 'tc-spot'); b.type = 'button'; b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); b.dataset.nodrag = '1';
+    b.style.left = s.x + '%'; b.style.top = s.y + '%'; b.style.setProperty('--r', String(s.r));
+    b.addEventListener('click', () => { if (st.fired.has(i)) return; st.fired.add(i); fire(s); });
+    panel.append(b);
+  });
+
+  // a layer of grime (or frost, ink, dust) to rub away
+  let cv = null, cx = null, rub = null;
+  const paint = () => {
+    const r = cv.getBoundingClientRect(); if (!r.width) return;
+    const p = NV_VEILS[veil.style] || NV_VEILS.soot, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const c8 = (n) => Math.max(0, Math.min(255, Math.round(n)));
+    cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.globalCompositeOperation = 'source-over';
+    cx.fillStyle = p.base; cx.fillRect(0, 0, r.width, r.height);
+    for (let i = 0; i < 1400; i += 1) {
+      const g = p.lo + Math.random() * (p.hi - p.lo);
+      cx.fillStyle = `rgba(${c8(g + p.tint[0])},${c8(g + p.tint[1])},${c8(g + p.tint[2])},${0.25 + Math.random() * 0.5})`;
+      const s = 1 + Math.random() * 5; cx.fillRect(Math.random() * r.width, Math.random() * r.height, s, s);
+    }
+    for (let i = 0; i < 9; i += 1) {
+      const x = Math.random() * r.width, y = Math.random() * r.height, rad = r.width * (0.1 + Math.random() * 0.2);
+      const g = cx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, `rgba(${p.smudge},.5)`); g.addColorStop(1, `rgba(${p.smudge},0)`);
+      cx.fillStyle = g; cx.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    st.painted = true;
+  };
+  const gone = () => {
+    const w = cv.width, h = cv.height, step = 10; let n = 0, k = 0;
+    const d = cx.getImageData(0, 0, w, h).data;
+    for (let y = 0; y < h; y += step) for (let x = 0; x < w; x += step) { n += 1; if (d[(y * w + x) * 4 + 3] < 40) k += 1; }
+    return k / n;
+  };
+  if (veil && veil.type === 'scratch') {
+    cv = nvEl('canvas', 'tc-veil'); cv.dataset.nodrag = '1'; cv.setAttribute('aria-label', 'A layer over the picture. Rub it away.');
+    cx = cv.getContext('2d', { willReadFrequently: true });
+    const pt = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    const rubTo = (p) => {
+      cx.globalCompositeOperation = 'destination-out'; cx.lineCap = 'round'; cx.lineJoin = 'round';
+      cx.lineWidth = Math.max(18, cv.getBoundingClientRect().width * 0.09);
+      cx.beginPath(); cx.moveTo(rub[0], rub[1]); cx.lineTo(p[0] + 0.01, p[1]); cx.stroke(); st.rubbed = true;
+    };
+    cv.addEventListener('pointerdown', (e) => { if (st.cleared) return; cv.setPointerCapture(e.pointerId); rub = pt(e); rubTo(rub); });
+    cv.addEventListener('pointermove', (e) => { if (!rub) return; const p = pt(e); rubTo(p); rub = p; });
+    const end = () => {
+      if (!rub) return; rub = null;
+      if (gone() > 0.55) { st.cleared = true; cv.classList.add('is-clear'); nvBuzz(25); }
+    };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    panel.append(cv);
+  }
+  // a dark picture, lit only where a lantern is held
+  let dark = null;
+  if (veil && veil.type === 'lantern') {
+    dark = nvEl('div', 'tc-dark'); panel.append(dark); panel.classList.add('is-lantern'); panel.dataset.nodrag = '1';
+    const lite = (e) => { const r = panel.getBoundingClientRect(); dark.style.setProperty('--lx', (e.clientX - r.left) + 'px'); dark.style.setProperty('--ly', (e.clientY - r.top) + 'px'); };
+    panel.addEventListener('pointermove', lite); panel.addEventListener('pointerdown', lite);
+    panel.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { dark.style.setProperty('--lx', '-999px'); dark.style.setProperty('--ly', '-999px'); } });
+  }
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(() => {
+      const r = panel.getBoundingClientRect(); if (!r.width) return;
+      if (cv && !st.cleared && !st.rubbed) paint();
+      if (dark) dark.style.setProperty('--lr', Math.round(r.width * veil.radius / 100) + 'px');
+    }).observe(panel);
+  }
+
+  // picking the card up by its paper margin (on a phone, by the strip across the top, so the page can still be scrolled)
+  cardEl.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('[data-nodrag]')) return;
+    if (e.pointerType === 'touch' && !e.target.closest('.tc-grip')) return;
+    cardEl.setPointerCapture(e.pointerId);
+    st.hold = { id: e.pointerId, x: e.clientX, y: e.clientY, px: st.x, py: st.y, lx: e.clientX };
+    cardEl.classList.add('is-held');
+  });
+  cardEl.addEventListener('pointermove', (e) => {
+    const h = st.hold; if (!h || e.pointerId !== h.id) return;
+    st.x = h.px + (e.clientX - h.x); st.y = h.py + (e.clientY - h.y);
+    const v = e.clientX - h.lx; h.lx = e.clientX;
+    st.rot += (Math.max(-9, Math.min(9, v * 0.9)) - st.rot) * 0.35;
+    cardEl.style.transform = `translate(${st.x}px, ${st.y}px) rotate(${st.rot}deg) scale(1.04)`;
+  });
+  const drop = () => {
+    if (!st.hold) return; st.hold = null; cardEl.classList.remove('is-held');
+    st.rot = (Math.random() - 0.5) * 3;
+    cardEl.style.transform = `translate(${st.x}px, ${st.y}px) rotate(${st.rot}deg)`;
+  };
+  cardEl.addEventListener('pointerup', drop); cardEl.addEventListener('pointercancel', drop);
+
+  const cap = nvEl('div', 'tc-cap');
+  cap.append(nvEl('b', '', ctx.label || ''), document.createTextNode(card.front.caption || ctx.text || ''));
+  front.append(grip, panel, cap, ear('Turn the card over'));
+  back.append(nvEl('p', 'tc-no', (ctx.label ? ctx.label + ' · ' : '') + (ctx.chapter || '')), nvEl('p', 'tc-bt', (card.back && card.back.text) || ctx.text || ''), ear('Turn the card back over'));
+  inner.append(front, back); cardEl.append(inner);
+  wrap.append(cardEl, whisper);
+  return wrap;
+};
+// the cards on show are kept, so a card keeps its state (rubbed clean, turned over) when the list redraws
+const nvCardCache = new Map();
+const nvCardGet = (c, label) => {
+  const sig = JSON.stringify(c.card) + '|' + c.text + '|' + label;
+  const hit = nvCardCache.get(c.id);
+  if (hit && hit.sig === sig) return hit.el;
+  let el;
+  try { el = nvCardEl(nvCardClean(c.card), { label, text: c.text, chapter: nvChapterName(Number(c.chapter) || 1) }); }
+  catch (e) { console.error('[book] could not draw a card', e); el = nvEl('p', 'nv-none', 'This card could not be drawn.'); }
+  nvCardCache.set(c.id, { sig, el });
+  return el;
+};
+
 // clues live in the shared record so they can be added at the table.
 // A clue with an account (detail) is a major clue: it also gets an entry in Appendix B, and its note links there.
 // Clues the Keeper is preparing are kept out of that list, in the Keeper's own private space, until they are revealed.
-const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null };
+const nvClues = { list: [], col: null, gm: false, prep: [], prepCol: null, prepStop: null, editing: null, previews: new Set() };
 const NV_STATUS = ['open', 'closed', 'cold'];
 const nvHasDetail = (c) => !nvBlank(c.detail) && String(c.detail).trim() !== '';
+const nvMajor = (c) => nvHasDetail(c) || !!c.card;   // a clue with an account, or a card, has its own entry in Appendix B
 const nvChapterName = (ch) => `Chapter ${nvOrdinal[ch] || ch}`;
 // the № of each clue, counted down the list chapter by chapter
 const nvClueNums = () => {
@@ -2055,7 +2302,7 @@ const nvDrawClues = (el) => {
       const li = nvEl('li', 'nv-clue is-' + st);
       li.id = 'clue-row-' + c.id;
       const txt = nvEl('span', 'txt');
-      if (nvHasDetail(c)) {
+      if (nvMajor(c)) {
         const a = nvEl('button', 'nv-clue-link', c.text); a.type = 'button';
         a.addEventListener('click', () => nvJump('major-' + c.id, 'majorclues'));
         txt.append(a, nvEl('span', 'nv-clue-ref', 'Appendix B'));
@@ -2070,7 +2317,7 @@ const nvDrawClues = (el) => {
       li.append(stamp);
       if (nvClues.gm && nvClues.col) {
         li.append(nvClueTools(c, nvClues.col, () => {
-          if (nvHasDetail(c) && !window.confirm('Remove this clue and its entry in Appendix B?')) return;
+          if (nvMajor(c) && !window.confirm('Remove this clue and its entry in Appendix B?')) return;
           nvClues.col.doc(c.id).delete().catch(() => {});
         }));
       }
@@ -2083,7 +2330,7 @@ const nvDrawClues = (el) => {
 // Appendix B: an entry for each clue that has an account
 dash.draw('majorlist', (el) => {
   el.replaceChildren();
-  const majors = nvClues.list.filter(nvHasDetail);
+  const majors = nvClues.list.filter(nvMajor);
   if (!majors.length) { el.append(nvEl('p', 'nv-none', 'No clue has been given a fuller account yet.')); return; }
   nvSafe(el, () => {
     const nums = nvClueNums();
@@ -2093,7 +2340,8 @@ dash.draw('majorlist', (el) => {
       const h = nvEl('h3', 'nv-major-h');
       h.append(nvEl('span', 'num', '№ ' + nums.get(c.id)), nvEl('span', 't', c.text));
       s.append(h, nvEl('p', 'nv-major-sub', nvChapterName(Number(c.chapter) || 1)));
-      String(c.detail).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => s.append(nvEl('p', 'nv-major-p', p)));
+      if (c.card) s.append(nvCardGet(c, '№ ' + nums.get(c.id)));
+      if (nvHasDetail(c)) String(c.detail).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).forEach((p) => s.append(nvEl('p', 'nv-major-p', p)));
       const back = nvEl('button', 'nv-clue-link nv-major-back', 'Back to the notes'); back.type = 'button';
       back.addEventListener('click', () => nvJump('clue-row-' + c.id, 'evidence'));
       s.append(back);
@@ -2110,20 +2358,35 @@ dash.draw('cluesprep', (el) => {
   nvSafe(el, () => nvClues.prep.forEach((c) => {
     const li = nvEl('li', 'nv-clue is-prep');
     const txt = nvEl('span', 'txt', c.text);
-    txt.append(nvEl('span', 'nv-clue-meta', nvChapterName(Number(c.chapter) || 1) + (nvHasDetail(c) ? ' · has an entry for Appendix B' : '')));
+    txt.append(nvEl('span', 'nv-clue-meta', nvChapterName(Number(c.chapter) || 1) + (nvMajor(c) ? ' · has an entry for Appendix B' : '')));
     const reveal = nvEl('button', 'nv-mat-btn', 'Reveal'); reveal.type = 'button';
     reveal.title = 'Add this clue to the notes, where the players can see it';
     reveal.addEventListener('click', () => {
       if (!nvClues.col || !nvClues.prepCol) return;
       reveal.disabled = true;
-      nvClues.col.add({ text: c.text, chapter: Number(c.chapter) || 1, order: Date.now(), status: 'open', detail: c.detail || '' })
-        .then(() => nvClues.prepCol.doc(c.id).delete()).catch(() => { reveal.disabled = false; });
+      const live = { text: c.text, chapter: Number(c.chapter) || 1, order: Date.now(), status: 'open', detail: c.detail || '' };
+      if (c.card) live.card = c.card;
+      nvClues.col.add(live).then(() => nvClues.prepCol.doc(c.id).delete()).catch(() => { reveal.disabled = false; });
     });
     li.append(nvEl('span', 'num', 'Draft'), txt, reveal);
-    li.append(nvClueTools(c, nvClues.prepCol, () => {
+    const tools = nvClueTools(c, nvClues.prepCol, () => {
       if (!window.confirm('Delete this prepared clue?')) return;
       nvClues.prepCol.doc(c.id).delete().catch(() => {});
-    }));
+    });
+    if (c.card) {
+      const pv = nvEl('button', 'nv-clue-tool', nvClues.previews.has(c.id) ? 'hide preview' : 'preview'); pv.type = 'button';
+      pv.addEventListener('click', () => { if (nvClues.previews.has(c.id)) nvClues.previews.delete(c.id); else nvClues.previews.add(c.id); dash.draw('cluesprep'); });
+      tools.append(nvEl('span', '', ' · '), pv);
+    }
+    li.append(tools);
+    if (c.card && nvClues.previews.has(c.id)) {
+      const box = nvEl('div', 'nv-clue-preview');
+      try {
+        const w = nvCardEl(nvCardClean(c.card), { label: 'Draft', text: c.text, chapter: nvChapterName(Number(c.chapter) || 1) });
+        w.classList.add('show-spots'); box.append(w, nvEl('p', 'nv-aside', 'A preview, with the hidden spots marked. Players see no marks.'));
+      } catch (e) { box.append(nvEl('p', 'nv-none', 'This card has a problem: ' + e.message)); }
+      li.append(box);
+    }
     el.append(li);
   }), 'the prepared clues');
 });
@@ -2161,6 +2424,37 @@ const nvPrepSync = () => {
     };
     box.querySelector('.nv-clue-btn').addEventListener('click', add);
     input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); add(); } });
+  });
+  // import: check every clue first, and add them only if all are sound
+  const nvImportParse = (text) => {
+    let data; try { data = JSON.parse(text); } catch (e) { throw new Error('That is not valid JSON (' + e.message + ').'); }
+    if (!Array.isArray(data)) data = [data];
+    if (!data.length) throw new Error('There is nothing to import.');
+    if (data.length > 40) throw new Error('Please import no more than 40 clues at a time.');
+    return data.map((c, i) => {
+      const at = 'Clue ' + (i + 1) + ': ';
+      if (!c || typeof c !== 'object') throw new Error(at + 'is not an object.');
+      const t = nvStr(c.text, 200); if (!t) throw new Error(at + 'needs some "text".');
+      const ch = Math.round(nvNum(c.chapter, 1, 9, 1));
+      const doc = { kind: 'prepared-clue', text: t, chapter: ch, detail: nvStr(c.detail, 4000), order: Date.now() + i };
+      if (c.card) { try { doc.card = nvCardClean(c.card); } catch (e) { throw new Error(at + e.message); } }
+      if (JSON.stringify(doc).length > 950000) throw new Error(at + 'is too large for the shared record (about 1 MB at most).');
+      return doc;
+    });
+  };
+  document.querySelectorAll('.nv-prep-import').forEach((box) => {
+    const ta = box.querySelector('.nv-import-text'), msg = box.querySelector('.nv-import-msg');
+    box.querySelector('.nv-import-btn').addEventListener('click', async () => {
+      msg.textContent = '';
+      if (!nvIsKeeper() || !nvClues.prepCol) { msg.textContent = 'Sign in as the Keeper first.'; return; }
+      let docs; try { docs = nvImportParse(ta.value); } catch (e) { msg.textContent = e.message; return; }
+      let done = 0;
+      try { for (const d of docs) { await nvClues.prepCol.add(d); done += 1; } } catch (e) { msg.textContent = 'Added ' + done + ' of ' + docs.length + '; then the shared record refused one.'; return; }
+      ta.value = ''; msg.textContent = 'Added ' + done + (done === 1 ? ' clue' : ' clues') + ' to the queue.';
+    });
+    box.querySelector('.nv-import-ex').addEventListener('click', () => {
+      fetch('data/clue_example.json').then((r) => r.text()).then((t) => { ta.value = t; msg.textContent = ''; }).catch(() => { msg.textContent = 'The example could not be loaded.'; });
+    });
   });
   document.querySelectorAll('.nv-prep-add').forEach((box) => {
     const sel = box.querySelector('.nv-prep-ch'), text = box.querySelector('.nv-prep-text'), detail = box.querySelector('.nv-prep-detail');
